@@ -112,7 +112,7 @@ namespace backend.Controllers
 			{
 				return NotFound(new ProblemDetails
 				{
-					Type = "",
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
 					Title = "Conta não encontrada",
 					Detail = ex.Message,
 					Status = StatusCodes.Status404NotFound
@@ -128,7 +128,7 @@ namespace backend.Controllers
 			}
 		}
 
-		
+
 
 	}
 }
