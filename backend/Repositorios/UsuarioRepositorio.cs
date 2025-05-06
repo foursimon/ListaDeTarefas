@@ -3,13 +3,14 @@ using backend.BancoDeDados;
 using backend.Exceptions;
 using backend.Models.Dtos.UsuarioDto;
 using backend.Models.Entities;
+using backend.Models.Security;
 using backend.Repositorios.Interface;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repositorios
 {
 	public class UsuarioRepositorio
-		(TarefasDbContext context, IMapper mapper) : IUsuarioRepositorio
+		(TarefasDbContext context, IMapper mapper, ISenhaHasher criptografia) : IUsuarioRepositorio
 	{
 		public async Task<UsuarioResponse> BuscarUsuarioPorId(Guid id)
 		{
@@ -20,6 +21,7 @@ namespace backend.Repositorios
 
 		public async Task<UsuarioResponse> CriarConta(UsuarioCreate usuario)
 		{
+			usuario.Senha = criptografia.CriptografarSenha(usuario.Senha);
 			Usuario novaConta = mapper.Map<Usuario>(usuario);
 			context.Usuarios.Add(novaConta);
 			await context.SaveChangesAsync();
@@ -40,8 +42,9 @@ namespace backend.Repositorios
 		public async Task<UsuarioResponse> EntrarNaConta(UsuarioLogin conta)
 		{
 			Usuario usuario = await context.Usuarios.FirstOrDefaultAsync(prop =>
-				prop.Email == conta.Email && prop.Senha == conta.Senha) ??
-				 throw new LoginErradoException("Email ou senha estão");
+				prop.Email == conta.Email) ?? throw new LoginErradoException("Email ou senha estão");
+			bool senhaCorreta = criptografia.VerificarSenha(conta.Senha, usuario.Senha);
+			if (!senhaCorreta) throw new LoginErradoException("Email ou senha incorretos");
 			return mapper.Map<UsuarioResponse>(usuario);
 		}
 
