@@ -11,7 +11,7 @@ namespace backend
 
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
-
+            builder.AddDependecies();
             var app = builder.Build();
      
 
