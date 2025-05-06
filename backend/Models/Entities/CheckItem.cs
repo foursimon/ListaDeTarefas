@@ -1,10 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace backend.Models.Entities
+﻿namespace backend.Models.Entities
 {
 	public class CheckItem
 	{
-		[Key]
 		public Guid Id { get; set; } = Guid.NewGuid();
 		public required string Item { get; set; }
 		public bool Concluido { get; set; } = false;

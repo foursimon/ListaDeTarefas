@@ -1,10 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace backend.Models.Entities
+﻿namespace backend.Models.Entities
 {
 	public sealed class Tarefas
 	{
-		[Key]
 		public Guid Id { get; set; } = Guid.NewGuid();
 		public required string Titulo { get; set; }
 		public bool Concluido { get; set; } = false;
