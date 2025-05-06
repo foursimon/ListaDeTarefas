@@ -1,4 +1,5 @@
 ﻿using backend.BancoDeDados;
+using backend.Models.Security;
 using backend.Repositorios;
 using backend.Repositorios.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ namespace backend.Infraestrutura
 		public static void AddRepositorios(WebApplicationBuilder builder)
 		{
 			builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
+			builder.Services.AddScoped<ISenhaHasher, SenhaHasher>();
 		}
 		public static void AddApiDocumentation(this WebApplication app)
 		{
