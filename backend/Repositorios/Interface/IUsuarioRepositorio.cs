@@ -7,7 +7,7 @@ namespace backend.Repositorios.Interface
 	{
 		public Task<UsuarioResponse> BuscarUsuarioPorId(Guid id);
 		public Task<UsuarioResponse> EntrarNaConta(UsuarioLogin conta);
-		public Task<UsuarioResponse> EditarConta(UsuarioUpdate conta);
+		public Task<UsuarioResponse> EditarConta(Guid id, UsuarioUpdate conta);
 		public Task<UsuarioResponse> CriarConta(UsuarioCreate usuario);
 		public Task ExcluirConta(Guid id);
 	}
