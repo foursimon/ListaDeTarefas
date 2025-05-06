@@ -37,7 +37,7 @@ namespace backend.Controllers
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
-					title: "Algo deu errado",
+					title: "Algo inesperado aconteceu.",
 					detail: ex.Message,
 					statusCode: StatusCodes.Status500InternalServerError
 				);
@@ -59,7 +59,7 @@ namespace backend.Controllers
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
-					title: "Algo deu errado ao criar sua conta.",
+					title: "Algo inesperado aconteceu.",
 					detail: ex.Message,
 					statusCode: StatusCodes.Status500InternalServerError
 				);
@@ -90,7 +90,7 @@ namespace backend.Controllers
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
-					title: "Algo deu errado ao criar sua conta.",
+					title: "Algo inesperado aconteceu.",
 					detail: ex.Message,
 					statusCode: StatusCodes.Status500InternalServerError
 				);
@@ -121,7 +121,7 @@ namespace backend.Controllers
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
-					title: "Algo deu errado ao criar sua conta.",
+					title: "Algo inesperado aconteceu.",
 					detail: ex.Message,
 					statusCode: StatusCodes.Status500InternalServerError
 				);
