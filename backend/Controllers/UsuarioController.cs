@@ -66,5 +66,35 @@ namespace backend.Controllers
 			}
 		}
 
+		[HttpPost("login")]
+		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<UsuarioResponse>> EntrarNaConta(UsuarioLogin dados)
+		{
+			try
+			{
+				var resposta = await usuarioRepositorio.EntrarNaConta(dados);
+				return Ok(resposta);
+			}catch(LoginErradoException ex)
+			{
+				return NotFound(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
+					Title = "Conta não encontrada",
+					Detail = ex.Message,
+					Status = StatusCodes.Status404NotFound
+				});
+			}catch(Exception ex)
+			{
+				return Problem(
+					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
+					title: "Algo deu errado ao criar sua conta.",
+					detail: ex.Message,
+					statusCode: StatusCodes.Status500InternalServerError
+				);
+			}
+		}
+
 	}
 }
