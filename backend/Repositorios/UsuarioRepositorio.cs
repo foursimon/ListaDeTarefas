@@ -15,7 +15,7 @@ namespace backend.Repositorios
 		public async Task<UsuarioResponse> BuscarUsuarioPorId(Guid id)
 		{
 			Usuario usuario = await context.Usuarios.FindAsync(id)
-				?? throw new UsuarioNaoEncontradoException("Conta não foi encontrada");
+				?? throw new UsuarioNaoEncontradoException($"Conta com id {id} não foi encontrada");
 			return mapper.Map<UsuarioResponse>(usuario);
 		}
 
@@ -32,7 +32,11 @@ namespace backend.Repositorios
 			UsuarioUpdate conta)
 		{
 			Usuario usuario = await context.Usuarios.FindAsync(id)
-				?? throw new UsuarioNaoEncontradoException("Conta não foi encontrada");
+				?? throw new UsuarioNaoEncontradoException($"Conta com id {id} não foi encontrada");
+			if(conta.Senha is not null)
+			{
+				conta.Senha = criptografia.CriptografarSenha(conta.Senha);
+			}
 			mapper.Map(conta, usuario);
 			context.Usuarios.Update(usuario);
 			await context.SaveChangesAsync();
@@ -51,7 +55,7 @@ namespace backend.Repositorios
 		public async Task ExcluirConta(Guid id)
 		{
 			Usuario usuario = await context.Usuarios.FindAsync(id)
-				?? throw new UsuarioNaoEncontradoException("Conta não foi encontrada");
+				?? throw new UsuarioNaoEncontradoException($"Conta com id {id} não foi encontrada");
 			context.Remove(usuario);
 			await context.SaveChangesAsync();
 			return;
