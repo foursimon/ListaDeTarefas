@@ -42,7 +42,7 @@ namespace backend.Repositorios
 		public async Task<UsuarioResponse> EntrarNaConta(UsuarioLogin conta)
 		{
 			Usuario usuario = await context.Usuarios.FirstOrDefaultAsync(prop =>
-				prop.Email == conta.Email) ?? throw new LoginErradoException("Email ou senha estão");
+				prop.Email == conta.Email) ?? throw new LoginErradoException("Email ou senha incorretos");
 			bool senhaCorreta = criptografia.VerificarSenha(conta.Senha, usuario.Senha);
 			if (!senhaCorreta) throw new LoginErradoException("Email ou senha incorretos");
 			return mapper.Map<UsuarioResponse>(usuario);
