@@ -1,4 +1,6 @@
 
+using backend.Infraestrutura;
+
 namespace backend
 {
     public class Program
@@ -11,15 +13,12 @@ namespace backend
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
+     
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
+            app.AddApiDocumentation();
 
             app.MapControllers();
 
