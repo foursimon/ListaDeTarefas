@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using backend.Models.Dtos;
+using backend.Models.Dtos.UsuarioDto;
 using backend.Models.Entities;
 
 namespace backend.Infraestrutura
