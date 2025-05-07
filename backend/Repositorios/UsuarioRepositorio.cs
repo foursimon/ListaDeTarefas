@@ -23,6 +23,9 @@ namespace backend.Repositorios
 
 		public async Task<UsuarioResponse> CriarConta(UsuarioCreate usuario)
 		{
+			//Antes de criar a conta do usuário, caso as informações enviadas
+			//estejam válidas, eu criptografo a senha do usuário para
+			//armazenar no banco de dados de forma segura.
 			usuario.Senha = criptografia.CriptografarSenha(usuario.Senha);
 			Usuario novaConta = mapper.Map<Usuario>(usuario);
 			context.Usuarios.Add(novaConta);
@@ -51,6 +54,8 @@ namespace backend.Repositorios
 				prop.Email == conta.Email) ?? throw new LoginErradoException("Email ou senha incorretos");
 			bool senhaCorreta = criptografia.VerificarSenha(conta.Senha, usuario.Senha);
 			if (!senhaCorreta) throw new LoginErradoException("Email ou senha incorretos");
+			//Um novo token de recarga é atribuído para o usuário quando
+			//ele entra na sua conta manualmente.
 			AtribuirTokenRecarga(usuario);
 			TokenResponse tokenResposta = new TokenResponse()
 			{
@@ -58,6 +63,8 @@ namespace backend.Repositorios
 					usuario.Id, usuario.Email),
 				TokenRecarga = usuario.TokenRecarga!
 			};
+			//Atualizo as informações salva no banco de dados
+			//com o token de recarga criado.
 			context.Usuarios.Update(usuario);
 			await context.SaveChangesAsync();
 			return tokenResposta;
@@ -72,9 +79,13 @@ namespace backend.Repositorios
 			return;
 		}
 
+		//Método responsável por pegar o token de recarga
+		//que é gerado através da classe TokenGerador.
 		private void AtribuirTokenRecarga(Usuario usuario)
 		{
 			TokenCriado token = geradorToken.CriarTokenRecarga();
+			//estou atribuindo o token recebido para a conta de usuário
+			//que for passada para este método.
 			usuario.TokenRecarga = token.TokenRecarga;
 			usuario.TempoToken = token.TempoToken;
 		}
