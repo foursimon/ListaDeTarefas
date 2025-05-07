@@ -30,7 +30,7 @@ namespace backend.BancoDeDados
 					.HasMaxLength(255).IsRequired();
 				builder.Property(p => p.QuantidadeTarefa).HasColumnName("quantidade_tarefas")
 				;
-				builder.Property(p => p.TokenAcesso).HasColumnName("token_acesso")
+				builder.Property(p => p.TempoToken).HasColumnName("tempo_token")
 				.HasMaxLength(255);
 				builder.Property(p => p.TokenRecarga).HasColumnName("token_recarga").HasMaxLength(255);
 				builder.HasIndex(p => p.Email).IsUnique();
