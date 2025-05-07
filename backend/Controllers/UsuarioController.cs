@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Repositorios.Interface;
 using backend.Exceptions;
 using backend.Models.Dtos.UsuarioDto;
+using Microsoft.AspNetCore.Authorization;
+using backend.Models.Tokens;
 
 namespace backend.Controllers
 {
@@ -67,11 +69,11 @@ namespace backend.Controllers
 		}
 
 		[HttpPost("login")]
-		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<TokenResponse>(StatusCodes.Status200OK)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<UsuarioResponse>> EntrarNaConta(UsuarioLogin dados)
+		public async Task<ActionResult<TokenResponse>> EntrarNaConta(UsuarioLogin dados)
 		{
 			try
 			{
@@ -98,7 +100,9 @@ namespace backend.Controllers
 		}
 
 		[HttpPatch("{id}")]
+		[Authorize]
 		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
@@ -129,7 +133,9 @@ namespace backend.Controllers
 		}
 
 		[HttpDelete("{id}")]
+		[Authorize]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
