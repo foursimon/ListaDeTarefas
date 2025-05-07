@@ -25,7 +25,6 @@ namespace backend.Repositorios
 		{
 			usuario.Senha = criptografia.CriptografarSenha(usuario.Senha);
 			Usuario novaConta = mapper.Map<Usuario>(usuario);
-			AtribuirTokenRecarga(novaConta);
 			context.Usuarios.Add(novaConta);
 			await context.SaveChangesAsync();
 			return mapper.Map<UsuarioResponse>(novaConta);
@@ -52,13 +51,15 @@ namespace backend.Repositorios
 				prop.Email == conta.Email) ?? throw new LoginErradoException("Email ou senha incorretos");
 			bool senhaCorreta = criptografia.VerificarSenha(conta.Senha, usuario.Senha);
 			if (!senhaCorreta) throw new LoginErradoException("Email ou senha incorretos");
+			AtribuirTokenRecarga(usuario);
 			TokenResponse tokenResposta = new TokenResponse()
 			{
 				TokenAcesso = geradorToken.CriarToken(usuario.Nome, 
 					usuario.Id, usuario.Email),
 				TokenRecarga = usuario.TokenRecarga!
 			};
-
+			context.Usuarios.Update(usuario);
+			await context.SaveChangesAsync();
 			return tokenResposta;
 		}
 
