@@ -78,13 +78,25 @@ namespace backend.Repositorios
 			await context.SaveChangesAsync();
 			return;
 		}
+		public async Task<TokenResponse> RecarregarToken(Guid idUsuario, string tokenRecarga)
+		{
+			Usuario usuario = await context.Usuarios.FindAsync(idUsuario)
+				?? throw new UsuarioNaoEncontradoException($"Conta com id {idUsuario} não foi encontrada");
 
+			TokenCriado tokenNovo = geradorToken.RecarregarToken(usuario, tokenRecarga);
+			usuario.TokenRecarga = tokenNovo.TokenRecarga;
+			usuario.TempoToken = tokenNovo.TempoToken;
+			context.Usuarios.Update(usuario);
+			await context.SaveChangesAsync();
+			return new TokenResponse() { TokenAcesso = tokenNovo.TokenAcesso!, 
+				TokenRecarga = tokenNovo.TokenRecarga };
+		}
 		//Método responsável por pegar o token de recarga
 		//que é gerado através da classe TokenGerador.
 		private void AtribuirTokenRecarga(Usuario usuario)
 		{
 			TokenCriado token = geradorToken.CriarTokenRecarga();
-			//estou atribuindo o token recebido para a conta de usuário
+			//Estou atribuindo o token recebido para a conta de usuário
 			//que for passada para este método.
 			usuario.TokenRecarga = token.TokenRecarga;
 			usuario.TempoToken = token.TempoToken;
