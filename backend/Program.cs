@@ -12,12 +12,14 @@ namespace backend
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
             builder.AddDependecies();
+            builder.AddJwtAuthentication();
             var app = builder.Build();
      
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
+            app.UseAuthentication();
             app.AddApiDocumentation();
 
             app.MapControllers();

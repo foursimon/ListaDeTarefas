@@ -1,6 +1,7 @@
 ﻿using backend.BancoDeDados;
 using backend.Repositorios;
 using backend.Repositorios.Interface;
+using backend.Security;
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 using Scalar.AspNetCore;
@@ -14,12 +15,14 @@ namespace backend.Infraestrutura
 			builder.Services.AddAutoMapper(typeof(Program));
 			builder.Services.AddDbContext<TarefasDbContext>(opt =>
 				opt.UseMySQL(builder.Configuration.GetConnectionString("MySqlConnection")!));
-			AddRepositorios(builder);
+			AddServices(builder);
 		}
 
-		public static void AddRepositorios(WebApplicationBuilder builder)
+		public static void AddServices(WebApplicationBuilder builder)
 		{
 			builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
+			builder.Services.AddScoped<ISenhaHasher, SenhaHasher>();
+			builder.Services.AddScoped<ITokenGerador, TokenGerador>();
 		}
 		public static void AddApiDocumentation(this WebApplication app)
 		{

@@ -9,6 +9,10 @@ namespace backend.Infraestrutura
 		public MapperProfile() 
 		{
 			CreateMap<UsuarioCreate, Usuario>();
+			CreateMap<Usuario, UsuarioResponse>();
+			CreateMap<UsuarioUpdate, Usuario>()
+				.ForAllMembers(opt => 
+					opt.Condition((src, dest, prop) => prop is not null));
 		}
 	}
 }
