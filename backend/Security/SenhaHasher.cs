@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
-namespace backend.Models.Security
+namespace backend.Security
 {
 	public class SenhaHasher : ISenhaHasher
 	{
@@ -12,7 +12,7 @@ namespace backend.Models.Security
 		private const int tamanhoHash = 32;
 		//Definindo o algoritmo de criptografia de hash
 		private static readonly HashAlgorithmName algoritmo = HashAlgorithmName.SHA512;
-		
+
 		//Método responsável por criptografar senhas.
 		public string CriptografarSenha(string senha)
 		{
@@ -25,7 +25,7 @@ namespace backend.Models.Security
 			//tamanhoSalt.
 			byte[] salt = RandomNumberGenerator.GetBytes(tamanhoSalt);
 			//Criptografando a senha;
-			byte[] hash = Rfc2898DeriveBytes.Pbkdf2(senha, salt, 
+			byte[] hash = Rfc2898DeriveBytes.Pbkdf2(senha, salt,
 				iteracoes, algoritmo, tamanhoHash);
 			//Divido a senha criptografada em duas partes: o hash primeiro e o salt segundo.
 			//Faço isso para armazenar os dois no campo senha do banco de dados e para

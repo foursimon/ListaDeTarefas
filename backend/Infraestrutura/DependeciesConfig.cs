@@ -1,7 +1,7 @@
 ﻿using backend.BancoDeDados;
-using backend.Models.Security;
 using backend.Repositorios;
 using backend.Repositorios.Interface;
+using backend.Security;
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 using Scalar.AspNetCore;

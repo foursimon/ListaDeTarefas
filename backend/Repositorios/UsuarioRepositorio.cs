@@ -3,8 +3,8 @@ using backend.BancoDeDados;
 using backend.Exceptions;
 using backend.Models.Dtos.UsuarioDto;
 using backend.Models.Entities;
-using backend.Models.Security;
 using backend.Repositorios.Interface;
+using backend.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repositorios

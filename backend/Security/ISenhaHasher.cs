@@ -1,4 +1,4 @@
-﻿namespace backend.Models.Security
+﻿namespace backend.Security
 {
 	public interface ISenhaHasher
 	{
