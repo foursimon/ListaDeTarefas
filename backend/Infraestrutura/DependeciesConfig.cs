@@ -15,13 +15,14 @@ namespace backend.Infraestrutura
 			builder.Services.AddAutoMapper(typeof(Program));
 			builder.Services.AddDbContext<TarefasDbContext>(opt =>
 				opt.UseMySQL(builder.Configuration.GetConnectionString("MySqlConnection")!));
-			AddRepositorios(builder);
+			AddServices(builder);
 		}
 
-		public static void AddRepositorios(WebApplicationBuilder builder)
+		public static void AddServices(WebApplicationBuilder builder)
 		{
 			builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
 			builder.Services.AddScoped<ISenhaHasher, SenhaHasher>();
+			builder.Services.AddScoped<ITokenGerador, TokenGerador>();
 		}
 		public static void AddApiDocumentation(this WebApplication app)
 		{
