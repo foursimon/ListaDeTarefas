@@ -3,6 +3,7 @@ using backend.BancoDeDados;
 using backend.Exceptions;
 using backend.Models.Dtos.UsuarioDto;
 using backend.Models.Entities;
+using backend.Models.Tokens;
 using backend.Repositorios.Interface;
 using backend.Security;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Repositorios
 {
 	public class UsuarioRepositorio
-		(TarefasDbContext context, IMapper mapper, ISenhaHasher criptografia) : IUsuarioRepositorio
+		(TarefasDbContext context, IMapper mapper, ISenhaHasher criptografia,
+		ITokenGerador geradorToken) : IUsuarioRepositorio
 	{
 		public async Task<UsuarioResponse> BuscarUsuarioPorId(Guid id)
 		{
@@ -23,6 +25,7 @@ namespace backend.Repositorios
 		{
 			usuario.Senha = criptografia.CriptografarSenha(usuario.Senha);
 			Usuario novaConta = mapper.Map<Usuario>(usuario);
+			AtribuirTokenRecarga(novaConta);
 			context.Usuarios.Add(novaConta);
 			await context.SaveChangesAsync();
 			return mapper.Map<UsuarioResponse>(novaConta);
@@ -43,13 +46,20 @@ namespace backend.Repositorios
 			return mapper.Map<UsuarioResponse>(usuario);
 		}
 
-		public async Task<UsuarioResponse> EntrarNaConta(UsuarioLogin conta)
+		public async Task<TokenResponse> EntrarNaConta(UsuarioLogin conta)
 		{
 			Usuario usuario = await context.Usuarios.FirstOrDefaultAsync(prop =>
 				prop.Email == conta.Email) ?? throw new LoginErradoException("Email ou senha incorretos");
 			bool senhaCorreta = criptografia.VerificarSenha(conta.Senha, usuario.Senha);
 			if (!senhaCorreta) throw new LoginErradoException("Email ou senha incorretos");
-			return mapper.Map<UsuarioResponse>(usuario);
+			TokenResponse tokenResposta = new TokenResponse()
+			{
+				TokenAcesso = geradorToken.CriarToken(usuario.Nome, 
+					usuario.Id, usuario.Email),
+				TokenRecarga = usuario.TokenRecarga!
+			};
+
+			return tokenResposta;
 		}
 
 		public async Task ExcluirConta(Guid id)
@@ -60,5 +70,13 @@ namespace backend.Repositorios
 			await context.SaveChangesAsync();
 			return;
 		}
+
+		private void AtribuirTokenRecarga(Usuario usuario)
+		{
+			TokenCriado token = geradorToken.CriarTokenRecarga();
+			usuario.TokenRecarga = token.TokenRecarga;
+			usuario.TempoToken = token.TempoToken;
+		}
+
 	}
 }
