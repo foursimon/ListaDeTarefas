@@ -10,6 +10,7 @@ namespace backend.Repositorios.Interface
 		public Task<TokenResponse> EntrarNaConta(UsuarioLogin conta);
 		public Task<UsuarioResponse> EditarConta(Guid id, UsuarioUpdate conta);
 		public Task<UsuarioResponse> CriarConta(UsuarioCreate usuario);
+		public Task<TokenResponse> RecarregarToken(Guid idUsuario, string tokenRecarga);
 		public Task ExcluirConta(Guid id);
 	}
 }
