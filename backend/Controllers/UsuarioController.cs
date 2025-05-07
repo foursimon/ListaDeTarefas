@@ -99,6 +99,48 @@ namespace backend.Controllers
 			}
 		}
 
+		[HttpPost("recarregar-token")]
+		[ProducesResponseType<TokenResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<TokenResponse>> RecarregarToken(TokenRecargaDto dados)
+		{
+			try
+			{
+				var resposta = await usuarioRepositorio.RecarregarToken(dados.IdUsuario, dados.TokenRecarga);
+				return Ok(resposta);
+			}
+			catch (UsuarioNaoEncontradoException ex)
+			{
+				return NotFound(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
+					Title = "Conta não encontrada",
+					Detail = ex.Message,
+					Status = StatusCodes.Status404NotFound
+				});
+			}
+			catch(TokenInvalidoException ex)
+			{
+				return BadRequest(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/400",
+					Title = "Informações inválidas",
+					Detail = ex.Message,
+					Status = StatusCodes.Status400BadRequest
+				});
+			}
+			catch(Exception ex)
+			{
+				return Problem(
+					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
+					title: "Algo inesperado aconteceu.",
+					detail: ex.Message,
+					statusCode: StatusCodes.Status500InternalServerError
+				);
+			}
+		}
+
 		[HttpPatch("{id}")]
 		[Authorize]
 		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status200OK)]
