@@ -5,6 +5,7 @@ using System.Text;
 using backend.Models.Entities;
 using backend.Models.Tokens;
 using System.Security.Cryptography;
+using backend.Exceptions;
 
 namespace backend.Security
 {
@@ -68,6 +69,23 @@ namespace backend.Security
 				TempoToken = DateTime.UtcNow.AddDays(7)
 			};
 			return tokenRecarga;
+		}
+
+		public TokenCriado RecarregarToken(Usuario usuario, string tokenRecebido)
+		{
+			if(tokenRecebido != usuario.TokenRecarga || tokenRecebido is null
+				|| usuario.TempoToken <= DateTime.UtcNow)
+			{
+				throw new TokenInvalidoException("O token de recarga enviado é invalido.");
+			}
+
+			TokenCriado tokenNovo = new TokenCriado()
+			{
+				TokenAcesso = CriarToken(usuario.Nome, usuario.Id, usuario.Email),
+				TokenRecarga = CriarTokenRecarga().TokenRecarga,
+				TempoToken = DateTime.UtcNow.AddDays(7)
+			};
+			return tokenNovo;
 		}
 	}
 }
