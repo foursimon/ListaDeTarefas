@@ -22,7 +22,18 @@ namespace backend.Controllers
 			{
 				var resposta = await usuarioService.CriarConta(dados);
 				return Created("", resposta);
-			}catch(Exception ex)
+			}
+			catch(EmailJaExisteException ex)
+			{
+				return BadRequest(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/400",
+					Title = "Conta já existe",
+					Detail = ex.Message,
+					Status = StatusCodes.Status400BadRequest
+				});
+			}
+			catch(Exception ex)
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
