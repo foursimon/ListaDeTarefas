@@ -1,4 +1,4 @@
-﻿namespace backend.Exceptions
+﻿namespace backend.Exceptions.UsuarioException
 {
 	public class EmailJaExisteException : Exception
 	{
