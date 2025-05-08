@@ -106,18 +106,18 @@ namespace backend.Controllers
 			}
 		}
 
-		[HttpPatch("{id}")]
+		[HttpPatch]
 		[Authorize]
 		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<UsuarioResponse>> EditarConta(Guid id, UsuarioUpdate dados)
+		public async Task<ActionResult<UsuarioResponse>> EditarConta(UsuarioUpdate dados)
 		{
 			try
 			{
-				var resposta = await usuarioService.EditarConta(id, dados);
+				var resposta = await usuarioService.EditarConta(dados);
 				return Ok(resposta);
 			}catch(UsuarioNaoEncontradoException ex)
 			{
@@ -139,18 +139,18 @@ namespace backend.Controllers
 			}
 		}
 
-		[HttpDelete("{id}")]
+		[HttpDelete]
 		[Authorize]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult> ExclurConta(Guid id)
+		public async Task<ActionResult> ExclurConta()
 		{
 			try
 			{
-				await usuarioService.ExcluirConta(id);
+				await usuarioService.ExcluirConta();
 				return NoContent();
 			}catch(UsuarioNaoEncontradoException ex)
 			{
