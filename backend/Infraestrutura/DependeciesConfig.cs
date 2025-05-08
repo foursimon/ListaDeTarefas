@@ -2,6 +2,8 @@
 using backend.Repositorios;
 using backend.Repositorios.Interface;
 using backend.Security;
+using backend.Services;
+using backend.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 using Scalar.AspNetCore;
@@ -16,6 +18,7 @@ namespace backend.Infraestrutura
 			builder.Services.AddDbContext<TarefasDbContext>(opt =>
 				opt.UseMySQL(builder.Configuration.GetConnectionString("MySqlConnection")!));
 			AddServices(builder);
+			builder.Services.AddHttpContextAccessor();
 		}
 
 		public static void AddServices(WebApplicationBuilder builder)
@@ -23,6 +26,7 @@ namespace backend.Infraestrutura
 			builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
 			builder.Services.AddScoped<ISenhaHasher, SenhaHasher>();
 			builder.Services.AddScoped<ITokenGerador, TokenGerador>();
+			builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 		}
 		public static void AddApiDocumentation(this WebApplication app)
 		{
