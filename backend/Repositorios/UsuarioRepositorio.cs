@@ -13,6 +13,12 @@ namespace backend.Repositorios
 	{
 		public async Task<Usuario> ArmazenarNovoUsuario(Usuario dados)
 		{
+			//Verificando se o email informado já está vinculado a uma conta
+			if(await context.Usuarios.AnyAsync(p => p.Email == dados.Email))
+			{
+				throw new EmailJaExisteException(
+					"O Email informado já está vinculado a uma conta");
+			}
 			context.Usuarios.Add(dados);
 			await context.SaveChangesAsync();
 			return dados;
