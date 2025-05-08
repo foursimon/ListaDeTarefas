@@ -6,12 +6,13 @@ using backend.Models.Tokens;
 using backend.Repositorios.Interface;
 using backend.Security;
 using backend.Services.Interface;
+using System.Security.Claims;
 
 namespace backend.Services
 {
 	public class UsuarioService(IMapper mapper, 
 		IUsuarioRepositorio usuarioRepositorio, ISenhaHasher criptografia,
-		ITokenGerador geradorToken) : IUsuarioService
+		ITokenGerador geradorToken, IHttpContextAccessor httpContext) : IUsuarioService
 	{
 		public async Task<UsuarioResponse> CriarConta(UsuarioCreate usuario)
 		{
@@ -24,13 +25,13 @@ namespace backend.Services
 			return mapper.Map<UsuarioResponse>(novaConta);
 		}
 
-		public async Task<UsuarioResponse> EditarConta(Guid id,
-			UsuarioUpdate conta)
+		public async Task<UsuarioResponse> EditarConta(UsuarioUpdate conta)
 		{
 			if (conta.Senha is not null)
 			{
 				conta.Senha = criptografia.CriptografarSenha(conta.Senha);
 			}
+			Guid id = Guid.Parse(httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorId(id);
 			mapper.Map(conta, usuario);
 			Usuario resposta = await usuarioRepositorio.AtualizarUsuario(usuario);
@@ -57,8 +58,9 @@ namespace backend.Services
 			return tokenResposta;
 		}
 
-		public async Task ExcluirConta(Guid id)
+		public async Task ExcluirConta()
 		{
+			Guid id = Guid.Parse(httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 			await usuarioRepositorio.DeletarUsuario(id);
 			return;
 		}
@@ -76,6 +78,7 @@ namespace backend.Services
 				TokenRecarga = tokenNovo.TokenRecarga
 			};
 		}
+
 		//Método responsável por pegar o token de recarga
 		//que é gerado através da classe TokenGerador.
 		private void AtribuirTokenRecarga(Usuario usuario)
