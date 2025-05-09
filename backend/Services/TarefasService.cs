@@ -49,7 +49,7 @@ namespace backend.Services
 
 		public async Task ExcluirTarefa(Guid idTarefa)
 		{
-			await tarefasRepositorio.ExcluirTarefa(idTarefa);
+			await tarefasRepositorio.ExcluirTarefa(idTarefa, PegarIdUsuario());
 			return;
 		}
 	}
