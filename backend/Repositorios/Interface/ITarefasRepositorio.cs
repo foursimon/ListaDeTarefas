@@ -11,7 +11,7 @@ namespace backend.Repositorios.Interface
 		public Task<Tarefas> AtualizarTarefa(Guid idTarefa, TarefasUpdate tarefa);
 
 		public Task<Tarefas> AtualizarStatusTarefa(Guid idTarefa, bool status);
-		public Task ExcluirTarefa(Guid idTarefa);
+		public Task ExcluirTarefa(Guid idTarefa, Guid idUsuario);
 
 
 	}

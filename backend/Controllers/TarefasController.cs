@@ -1,4 +1,5 @@
 ﻿using backend.Exceptions.TarefasException;
+using backend.Exceptions.UsuarioException;
 using backend.Models.Dtos;
 using backend.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
@@ -38,6 +39,7 @@ namespace backend.Controllers
 		[HttpPost]
 		[Authorize]
 		[ProducesResponseType<TarefasResponse>(StatusCodes.Status201Created)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
@@ -56,6 +58,16 @@ namespace backend.Controllers
 					Title = "Quantidade máxima de tarefas excedida",
 					Detail = ex.Message,
 					Status = StatusCodes.Status400BadRequest
+				});
+			}
+			catch(UsuarioNaoEncontradoException ex)
+			{
+				return NotFound(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
+					Title = "Usuário não encontrado",
+					Detail = ex.Message,
+					Status = StatusCodes.Status404NotFound
 				});
 			}
 			catch (Exception ex)
@@ -159,6 +171,16 @@ namespace backend.Controllers
 				{
 					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
 					Title = "Tarefa não foi encontrada",
+					Detail = ex.Message,
+					Status = StatusCodes.Status404NotFound
+				});
+			}
+			catch (UsuarioNaoEncontradoException ex)
+			{
+				return NotFound(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
+					Title = "Usuário não encontrado",
 					Detail = ex.Message,
 					Status = StatusCodes.Status404NotFound
 				});
