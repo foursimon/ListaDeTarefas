@@ -19,15 +19,22 @@ namespace backend.Repositorios
 			return tarefa;
 		}
 
-		private async Task VerificarAtualizarQtdTarefas(Guid idUsuario)
+		private async Task VerificarQtdTarefas(Guid idUsuario)
 		{
 			Usuario usuario = await context.Usuarios.FindAsync(idUsuario)
 				?? throw new UsuarioNaoEncontradoException($"Usuário com o id {idUsuario} não foi encontrado");
 			if (usuario.QuantidadeTarefa >=10)
 				throw new QtdTarefaExcedidaException("Não é possível criar mais uma tarefa por ter exceido quantidade máxima");
-			usuario.QuantidadeTarefa++;
-			context.Usuarios.Update(usuario);
 			return;
+		}
+
+		private async Task AtualizarQtdTarefas(Guid idUsuario, bool criouTarefa)
+		{
+			Usuario usuario = await context.Usuarios.FindAsync(idUsuario)
+				?? throw new UsuarioNaoEncontradoException($"Usuário com o id {idUsuario} não foi encontrado");
+			if (criouTarefa) usuario.QuantidadeTarefa++;
+			else usuario.QuantidadeTarefa--;
+			context.Usuarios.Update(usuario);
 		}
 		public async Task<List<Tarefas>> BuscarTarefasPorUsuario(Guid idUsuario)
 		{
@@ -38,8 +45,9 @@ namespace backend.Repositorios
 
 		public async Task<Tarefas> CriarTarefa(Tarefas novaTarefa)
 		{
-			await VerificarAtualizarQtdTarefas(novaTarefa.IdUsuario);
+			await VerificarQtdTarefas(novaTarefa.IdUsuario);
 			context.Tarefas.Add(novaTarefa);
+			await AtualizarQtdTarefas(novaTarefa.IdUsuario, true);
 			await context.SaveChangesAsync();
 			return novaTarefa;
 		}
@@ -63,10 +71,11 @@ namespace backend.Repositorios
 		}
 
 
-		public async Task ExcluirTarefa(Guid idTarefa)
+		public async Task ExcluirTarefa(Guid idTarefa, Guid idUsuario)
 		{
 			Tarefas tarefa = await BuscarTarefaPorId(idTarefa);
 			context.Remove(tarefa);
+			await AtualizarQtdTarefas(idUsuario, false);
 			await context.SaveChangesAsync();
 			return;
 		}
