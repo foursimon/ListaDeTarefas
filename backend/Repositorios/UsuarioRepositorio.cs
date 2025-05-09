@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using backend.BancoDeDados;
-using backend.Exceptions;
-using backend.Models.Dtos.UsuarioDto;
+﻿using backend.BancoDeDados;
+using backend.Exceptions.UsuarioException;
 using backend.Models.Entities;
 using backend.Repositorios.Interface;
 using Microsoft.EntityFrameworkCore;
