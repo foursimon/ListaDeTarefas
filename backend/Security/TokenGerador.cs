@@ -5,7 +5,7 @@ using System.Text;
 using backend.Models.Entities;
 using backend.Models.Tokens;
 using System.Security.Cryptography;
-using backend.Exceptions;
+using backend.Exceptions.UsuarioException;
 
 namespace backend.Security
 {
