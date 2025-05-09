@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using backend.Exceptions;
-using backend.Models.Dtos.UsuarioDto;
+﻿using backend.Exceptions.UsuarioException;
+using backend.Infraestrutura.Mappers;
+using backend.Models.Dtos;
 using backend.Models.Entities;
 using backend.Models.Tokens;
 using backend.Repositorios.Interface;
@@ -10,32 +10,32 @@ using System.Security.Claims;
 
 namespace backend.Services
 {
-	public class UsuarioService(IMapper mapper, 
-		IUsuarioRepositorio usuarioRepositorio, ISenhaHasher criptografia,
-		ITokenGerador geradorToken, IHttpContextAccessor httpContext) : IUsuarioService
+	public class UsuarioService(IUsuarioRepositorio usuarioRepositorio, 
+		ISenhaHasher criptografia, ITokenGerador geradorToken, 
+		IHttpContextAccessor httpContext) : IUsuarioService
 	{
 		public async Task<UsuarioResponse> CriarConta(UsuarioCreate usuario)
 		{
 			//Antes de criar a conta do usuário, caso as informações enviadas
 			//estejam válidas, eu criptografo a senha do usuário para
 			//armazenar no banco de dados de forma segura.
-			usuario.Senha = criptografia.CriptografarSenha(usuario.Senha);
-			Usuario novaConta = mapper.Map<Usuario>(usuario);
+			Usuario novaConta = usuario.ToUsuario();
+			novaConta.Senha = criptografia.CriptografarSenha(novaConta.Senha);
 			await usuarioRepositorio.ArmazenarNovoUsuario(novaConta);
-			return mapper.Map<UsuarioResponse>(novaConta);
+			return novaConta.ToUsuarioResponse();
 		}
 
 		public async Task<UsuarioResponse> EditarConta(UsuarioUpdate conta)
 		{
-			if (conta.Senha is not null)
-			{
-				conta.Senha = criptografia.CriptografarSenha(conta.Senha);
-			}
 			Guid id = Guid.Parse(httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorId(id);
-			mapper.Map(conta, usuario);
+			Usuario usuarioEncontrado = await usuarioRepositorio.BuscarUsuarioPorId(id);
+			Usuario usuario = conta.ToUsuario(usuarioEncontrado);
+			if(conta.Senha is not null)
+			{
+				usuario.Senha = criptografia.CriptografarSenha(conta.Senha);
+			}
 			Usuario resposta = await usuarioRepositorio.AtualizarUsuario(usuario);
-			return mapper.Map<UsuarioResponse>(resposta);
+			return resposta.ToUsuarioResponse();
 		}
 
 		public async Task<TokenResponse> EntrarNaConta(UsuarioLogin conta)
