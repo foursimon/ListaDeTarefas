@@ -1,6 +1,4 @@
-﻿using backend.Models.Dtos.UsuarioDto;
-using backend.Models.Entities;
-using backend.Models.Tokens;
+﻿using backend.Models.Entities;
 
 namespace backend.Repositorios.Interface
 {
