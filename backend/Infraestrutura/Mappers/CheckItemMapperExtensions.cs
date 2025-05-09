@@ -13,5 +13,20 @@ namespace backend.Infraestrutura.Mappers
 				item.Concluido
 			);
 		}
+
+		public static CheckItem ToCheckItem(this CheckItemCreate dados)
+		{
+			return new CheckItem
+			{
+				Item = dados.item,
+				Concluido = false
+			};
+		}
+
+		public static CheckItem ToCheckItem(this CheckItemUpdate dados, CheckItem item)
+		{
+			item.Item = dados.item ?? item.Item;
+			return item;
+		}
 	}
 }
