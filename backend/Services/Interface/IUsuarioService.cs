@@ -1,4 +1,4 @@
-﻿using backend.Models.Dtos.UsuarioDto;
+﻿using backend.Models.Dtos;
 using backend.Models.Tokens;
 
 namespace backend.Services.Interface
