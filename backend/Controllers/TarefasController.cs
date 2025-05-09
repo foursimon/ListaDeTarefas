@@ -2,9 +2,7 @@
 using backend.Models.Dtos;
 using backend.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography.X509Certificates;
 
 namespace backend.Controllers
 {
