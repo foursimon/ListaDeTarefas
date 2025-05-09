@@ -18,8 +18,8 @@ namespace backend
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
             app.AddApiDocumentation();
 
             app.MapControllers();

@@ -1,39 +1,64 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using backend.Models.Tokens;
-using backend.Services.Interface;
-using backend.Exceptions.UsuarioException;
+﻿using backend.Exceptions.TarefasException;
 using backend.Models.Dtos;
+using backend.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class UsuarioController(IUsuarioService usuarioService) : ControllerBase
+	public class TarefasController(ITarefasService tarefasService) : ControllerBase
 	{
-
-		[HttpPost("registrar")]
-		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status201Created)]
-		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+		[HttpGet]
+		[Authorize]
+		[ProducesResponseType<TarefasResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<UsuarioResponse>> CriarConta(UsuarioCreate dados)
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<TarefasResponse>> BuscarTarefasPorUsuario()
 		{
 			try
 			{
-				var resposta = await usuarioService.CriarConta(dados);
+				var resposta = await tarefasService.BuscarTarefasPorUsuario();
+				if (resposta is null) return NoContent();
+				return Ok(resposta);
+			}
+			catch (Exception ex)
+			{
+				return Problem(
+					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
+					title: "Algo inesperado aconteceu.",
+					detail: ex.Message,
+					statusCode: StatusCodes.Status500InternalServerError
+				);
+			}
+		}
+
+		[HttpPost]
+		[Authorize]
+		[ProducesResponseType<TarefasResponse>(StatusCodes.Status201Created)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<TarefasResponse>> CriarNovaTarefa(TarefasCreate dados)
+		{
+			try
+			{
+				var resposta = await tarefasService.CriarNovaTarefa(dados);
 				return Created("", resposta);
 			}
-			catch(EmailJaExisteException ex)
+			catch (QtdTarefaExcedidaException ex)
 			{
 				return BadRequest(new ProblemDetails
 				{
 					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/400",
-					Title = "Conta já existe",
+					Title = "Quantidade máxima de tarefas excedida",
 					Detail = ex.Message,
 					Status = StatusCodes.Status400BadRequest
 				});
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
@@ -44,102 +69,31 @@ namespace backend.Controllers
 			}
 		}
 
-		[HttpPost("login")]
-		[ProducesResponseType<TokenResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
-		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<TokenResponse>> EntrarNaConta(UsuarioLogin dados)
-		{
-			try
-			{
-				var resposta = await usuarioService.EntrarNaConta(dados);
-				return Ok(resposta);
-			}catch(LoginErradoException ex)
-			{
-				return NotFound(new ProblemDetails
-				{
-					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
-					Title = "Conta não encontrada",
-					Detail = ex.Message,
-					Status = StatusCodes.Status404NotFound
-				});
-			}catch(Exception ex)
-			{
-				return Problem(
-					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
-					title: "Algo inesperado aconteceu.",
-					detail: ex.Message,
-					statusCode: StatusCodes.Status500InternalServerError
-				);
-			}
-		}
-
-		[HttpPost("recarregar-token")]
-		[ProducesResponseType<TokenResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<TokenResponse>> RecarregarToken(TokenRecargaDto dados)
-		{
-			try
-			{
-				var resposta = await usuarioService.RecarregarToken(dados.IdUsuario, dados.TokenRecarga);
-				return Ok(resposta);
-			}
-			catch (UsuarioNaoEncontradoException ex)
-			{
-				return NotFound(new ProblemDetails
-				{
-					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
-					Title = "Conta não encontrada",
-					Detail = ex.Message,
-					Status = StatusCodes.Status404NotFound
-				});
-			}
-			catch(TokenInvalidoException ex)
-			{
-				return BadRequest(new ProblemDetails
-				{
-					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/400",
-					Title = "Informações inválidas",
-					Detail = ex.Message,
-					Status = StatusCodes.Status400BadRequest
-				});
-			}
-			catch(Exception ex)
-			{
-				return Problem(
-					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
-					title: "Algo inesperado aconteceu.",
-					detail: ex.Message,
-					statusCode: StatusCodes.Status500InternalServerError
-				);
-			}
-		}
-
-		[HttpPatch]
+		[HttpPatch("{idTarefa}")]
 		[Authorize]
-		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType<TarefasResponse>(StatusCodes.Status200OK)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<UsuarioResponse>> EditarConta(UsuarioUpdate dados)
+		public async Task<ActionResult<TarefasResponse>> EditarTarefa(Guid idTarefa, TarefasUpdate dados)
 		{
 			try
 			{
-				var resposta = await usuarioService.EditarConta(dados);
+				var resposta = await tarefasService.EditarTarefa(idTarefa, dados);
 				return Ok(resposta);
-			}catch(UsuarioNaoEncontradoException ex)
+			}
+			catch (TarefaNaoEncontradaException ex)
 			{
 				return NotFound(new ProblemDetails
 				{
 					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
-					Title = "Conta não encontrada",
+					Title = "Tarefa não foi encontrada",
 					Detail = ex.Message,
 					Status = StatusCodes.Status404NotFound
 				});
-			}catch(Exception ex)
+			}
+			catch (Exception ex)
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
@@ -150,30 +104,66 @@ namespace backend.Controllers
 			}
 		}
 
-		[HttpDelete]
+		[HttpPatch("status/{idTarefa}")]
+		[Authorize]
+		[ProducesResponseType<TarefasResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<TarefasResponse>> EditarTarefa(Guid idTarefa, [FromBody] bool status)
+		{
+			try
+			{
+				var resposta = await tarefasService.AtualizarStatusTarefa(idTarefa, status);
+				return Ok(resposta);
+			}
+			catch (TarefaNaoEncontradaException ex)
+			{
+				return NotFound(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
+					Title = "Tarefa não foi encontrada",
+					Detail = ex.Message,
+					Status = StatusCodes.Status404NotFound
+				});
+			}
+			catch (Exception ex)
+			{
+				return Problem(
+					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
+					title: "Algo inesperado aconteceu.",
+					detail: ex.Message,
+					statusCode: StatusCodes.Status500InternalServerError
+				);
+			}
+		}
+
+		[HttpDelete("{idTarefa}")]
 		[Authorize]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult> ExclurConta()
+		public async Task<ActionResult> ExcluirTarefa(Guid idTarefa)
 		{
 			try
 			{
-				await usuarioService.ExcluirConta();
+				await tarefasService.ExcluirTarefa(idTarefa);
 				return NoContent();
-			}catch(UsuarioNaoEncontradoException ex)
+			}
+			catch (TarefaNaoEncontradaException ex)
 			{
 				return NotFound(new ProblemDetails
 				{
 					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
-					Title = "Conta não encontrada",
+					Title = "Tarefa não foi encontrada",
 					Detail = ex.Message,
 					Status = StatusCodes.Status404NotFound
 				});
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
@@ -183,6 +173,5 @@ namespace backend.Controllers
 				);
 			}
 		}
-
 	}
 }
