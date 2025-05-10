@@ -26,6 +26,7 @@ namespace backend.Infraestrutura.Mappers
 				Concluido = false,
 				Descricao = tarefa.Descricao,
 				DataDeEncerramento = Convert.ToDateTime(tarefa.DataDeEncerramento.ToString() + " 00:00:00"),
+				Itens = tarefa.Itens.Select(p => p.ToCheckItem()).ToList(),
 				IdUsuario = idUsuario
 			};
 		}
