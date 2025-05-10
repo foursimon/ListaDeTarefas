@@ -22,7 +22,7 @@ namespace backend.Controllers
 			try
 			{
 				var resposta = await tarefasService.BuscarTarefasPorUsuario();
-				if (resposta is null) return NoContent();
+				if (resposta.Count == 0) return NoContent();
 				return Ok(resposta);
 			}
 			catch (Exception ex)
