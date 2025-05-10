@@ -10,10 +10,13 @@ namespace backend.Models.Dtos
 
 	public sealed record CheckItemCreate(
 		[Required(ErrorMessage = "Escreva o item da lista")]
-		string item
+		string Item
 	);
 
 	public sealed record CheckItemUpdate(
-		string? item	
+		[Required(ErrorMessage = "É necessário o id do item a ser atualizado")]
+		Guid IdItem,
+		string? Item,
+		bool? Concluido
 	);
 };
