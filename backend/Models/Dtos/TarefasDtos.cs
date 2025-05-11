@@ -17,7 +17,10 @@ namespace backend.Models.Dtos
 		DateOnly? DataDeEncerramento, 
 		string? Descricao, 
 		[Required(ErrorMessage = "Insira o tipo de tarefa")]
-		string Tipo
+		string Tipo,
+		[Required(ErrorMessage = "Adicione uma lista de itens")]
+		[Length(minimumLength:3, maximumLength: 20, ErrorMessage = "A lista de tarefas deve ter 3 itens e não pode exceder 20 itens")]
+		List<CheckItemCreate> Itens
 	);
 
 	public sealed record TarefasUpdate(

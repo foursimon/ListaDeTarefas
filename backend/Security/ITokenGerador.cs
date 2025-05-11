@@ -1,5 +1,5 @@
 ﻿using backend.Models.Entities;
-using backend.Models.Tokens;
+using backend.Models.Dtos;
 
 namespace backend.Security
 {

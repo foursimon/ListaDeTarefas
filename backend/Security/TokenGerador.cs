@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using backend.Models.Entities;
-using backend.Models.Tokens;
+using backend.Models.Dtos;
 using System.Security.Cryptography;
 using backend.Exceptions.UsuarioException;
 
@@ -63,12 +63,9 @@ namespace backend.Security
 			//Por padrão, coloco sete dias para o tempo de vida.
 			//Quando esse tempo passar, o usuário terá que entrar em sua conta
 			//novamente.
-			TokenCriado tokenRecarga = new TokenCriado()
-			{
-				TokenRecarga = Convert.ToBase64String(numeroAleatorio),
-				TempoToken = DateTime.UtcNow.AddDays(7)
-			};
-			return tokenRecarga;
+			var tokenRecarga = Convert.ToBase64String(numeroAleatorio);
+			var tempoToken = DateTime.UtcNow.AddDays(7);
+			return new TokenCriado(null, tokenRecarga, tempoToken);
 		}
 
 		public TokenCriado RecarregarToken(Usuario usuario, string tokenRecebido)
@@ -79,13 +76,10 @@ namespace backend.Security
 				throw new TokenInvalidoException("O token de recarga enviado é invalido.");
 			}
 
-			TokenCriado tokenNovo = new TokenCriado()
-			{
-				TokenAcesso = CriarToken(usuario.Nome, usuario.Id, usuario.Email),
-				TokenRecarga = CriarTokenRecarga().TokenRecarga,
-				TempoToken = DateTime.UtcNow.AddDays(7)
-			};
-			return tokenNovo;
+			var tokenAcesso = CriarToken(usuario.Nome, usuario.Id, usuario.Email);
+			var tokenRecarga = CriarTokenRecarga().TokenRecarga;
+			var tempoToken = DateTime.UtcNow.AddDays(7);
+			return new TokenCriado(tokenAcesso, tokenRecarga, tempoToken);
 		}
 	}
 }

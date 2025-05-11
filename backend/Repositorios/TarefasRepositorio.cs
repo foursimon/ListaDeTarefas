@@ -13,9 +13,8 @@ namespace backend.Repositorios
 	{
 		private async Task<Tarefas> BuscarTarefaPorId(Guid id)
 		{
-			Tarefas tarefa = await context.Tarefas.FindAsync(id)
-				?? throw new TarefaNaoEncontradaException
-					($"Tarefa com id {id} não foi encontrada");
+			Tarefas tarefa = await context.Tarefas.Include(p => p.Itens).FirstOrDefaultAsync
+				(p => p.Id == id) ?? throw new TarefaNaoEncontradaException($"Tarefa com id {id} não foi encontrada");
 			return tarefa;
 		}
 
@@ -46,7 +45,7 @@ namespace backend.Repositorios
 		public async Task<Tarefas> CriarTarefa(Tarefas novaTarefa)
 		{
 			await VerificarQtdTarefas(novaTarefa.IdUsuario);
-			context.Tarefas.Add(novaTarefa);
+			context.AddRange(novaTarefa);
 			await AtualizarQtdTarefas(novaTarefa.IdUsuario, true);
 			await context.SaveChangesAsync();
 			return novaTarefa;
@@ -74,7 +73,7 @@ namespace backend.Repositorios
 		public async Task ExcluirTarefa(Guid idTarefa, Guid idUsuario)
 		{
 			Tarefas tarefa = await BuscarTarefaPorId(idTarefa);
-			context.Remove(tarefa);
+			context.RemoveRange(tarefa);
 			await AtualizarQtdTarefas(idUsuario, false);
 			await context.SaveChangesAsync();
 			return;

@@ -22,6 +22,15 @@ namespace backend.Infraestrutura
 							Encoding.UTF8.GetBytes(builder.Configuration["JWT:Token"]!)),
 						ValidateIssuerSigningKey = true
 					};
+					//Aplicando configurações de Cookies para acessar o token de acesso.
+					opt.Events = new JwtBearerEvents
+					{
+						OnMessageReceived = contexto =>
+						{
+							contexto.Token = contexto.Request.Cookies["TOKEN_ACESSO"];
+							return Task.CompletedTask;
+						}
+					};
 				});
 		}
 	}
