@@ -14,6 +14,29 @@ namespace backend.Services
 		ISenhaHasher criptografia, ITokenGerador geradorToken, 
 		IHttpContextAccessor httpContext) : IUsuarioService
 	{
+		public void ColocarTokensNoCookie(TokenResponse tokens)
+		{
+			httpContext.HttpContext!.Response.Cookies.Append("TOKEN_ACESSO", tokens.TokenAcesso,
+				new CookieOptions
+				{
+					Expires = DateTime.UtcNow.AddMinutes(20),
+					HttpOnly = true,
+					IsEssential = true,
+					Secure = true,
+					SameSite = SameSiteMode.Strict
+				});
+			httpContext.HttpContext!.Response.Cookies.Append("TOKEN_RECARGA", tokens.TokenRecarga,
+				new CookieOptions
+				{
+					Expires = DateTime.UtcNow.AddMinutes(20),
+					HttpOnly = true,
+					IsEssential = true,
+					Secure = true,
+					SameSite = SameSiteMode.Strict
+				});
+
+		}
+
 		public async Task<UsuarioResponse> CriarConta(UsuarioCreate usuario)
 		{
 			//Antes de criar a conta do usuário, caso as informações enviadas
@@ -64,11 +87,13 @@ namespace backend.Services
 			await usuarioRepositorio.DeletarUsuario(id);
 			return;
 		}
-		public async Task<TokenResponse> RecarregarToken(Guid idUsuario, string tokenRecarga)
+		public async Task<TokenResponse> RecarregarToken()
 		{
+			var idUsuario = Guid.Parse(httpContext.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+			var tokenRecarga = httpContext.HttpContext!.Request.Cookies["TOKEN_Recarga"];
 			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorId(idUsuario);
 
-			TokenCriado tokenNovo = geradorToken.RecarregarToken(usuario, tokenRecarga);
+			TokenCriado tokenNovo = geradorToken.RecarregarToken(usuario, tokenRecarga!);
 			usuario.TokenRecarga = tokenNovo.TokenRecarga;
 			usuario.TempoToken = tokenNovo.TempoToken;
 			await usuarioRepositorio.AtualizarUsuario(usuario);
