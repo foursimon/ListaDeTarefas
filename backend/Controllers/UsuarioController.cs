@@ -45,16 +45,17 @@ namespace backend.Controllers
 		}
 
 		[HttpPost("login")]
-		[ProducesResponseType<TokenResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<TokenResponse>> EntrarNaConta(UsuarioLogin dados)
+		public async Task<ActionResult> EntrarNaConta(UsuarioLogin dados)
 		{
 			try
 			{
 				var resposta = await usuarioService.EntrarNaConta(dados);
-				return Ok(resposta);
+				usuarioService.ColocarTokensNoCookie(resposta);
+				return Ok();
 			}catch(LoginErradoException ex)
 			{
 				return NotFound(new ProblemDetails
@@ -76,15 +77,16 @@ namespace backend.Controllers
 		}
 
 		[HttpPost("recarregar-token")]
-		[ProducesResponseType<TokenResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<TokenResponse>> RecarregarToken(TokenRecargaDto dados)
+		public async Task<ActionResult<TokenResponse>> RecarregarToken()
 		{
 			try
 			{
-				var resposta = await usuarioService.RecarregarToken(dados.IdUsuario, dados.TokenRecarga);
-				return Ok(resposta);
+				var resposta = await usuarioService.RecarregarToken();
+				usuarioService.ColocarTokensNoCookie(resposta);
+				return Ok();
 			}
 			catch (UsuarioNaoEncontradoException ex)
 			{
