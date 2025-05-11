@@ -1,5 +1,4 @@
 ﻿using backend.Models.Dtos;
-using backend.Models.Tokens;
 
 namespace backend.Services.Interface
 {
