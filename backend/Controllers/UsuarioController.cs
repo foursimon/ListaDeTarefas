@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using backend.Models.Tokens;
 using backend.Services.Interface;
 using backend.Exceptions.UsuarioException;
 using backend.Models.Dtos;
