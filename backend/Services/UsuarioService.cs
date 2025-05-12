@@ -21,7 +21,7 @@ namespace backend.Services
 				new CookieOptions
 				{
 					//Expires indica o tempo que o cookie irá expirar,
-					Expires = DateTime.UtcNow.AddMinutes(20),
+					Expires = DateTime.UtcNow.AddMinutes(10),
 					//HttpOnly indica se o valor no cookie não pode ser acessado
 					//por scripts no lado cliente (frontend)
 					HttpOnly = true,
@@ -95,10 +95,10 @@ namespace backend.Services
 		}
 		public async Task<TokenResponse> RecarregarToken()
 		{
-			var idUsuario = Guid.Parse(httpContext.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-			var tokenRecargaCookie = httpContext.HttpContext!.Request.Cookies["TOKEN_Recarga"];
+			var tokenRecargaCookie = httpContext.HttpContext?.Request.Cookies["TOKEN_RECARGA"]
+				?? throw new Exception("É necessário realizar login novamente");
+			Guid idUsuario = geradorToken.PegarIdUsuarioToken(tokenRecargaCookie);
 			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorId(idUsuario);
-
 			TokenCriado tokenNovo = geradorToken.RecarregarToken(usuario, tokenRecargaCookie!);
 			usuario.TokenRecarga = tokenNovo.TokenRecarga;
 			usuario.TempoToken = tokenNovo.TempoToken;
@@ -112,7 +112,7 @@ namespace backend.Services
 		//que é gerado através da classe TokenGerador.
 		private void AtribuirTokenRecarga(Usuario usuario)
 		{
-			TokenCriado token = geradorToken.CriarTokenRecarga();
+			TokenCriado token = geradorToken.CriarTokenRecarga(usuario.Id);
 			//Estou atribuindo o token recebido para a conta de usuário
 			//que for passada para este método.
 			usuario.TokenRecarga = token.TokenRecarga;
