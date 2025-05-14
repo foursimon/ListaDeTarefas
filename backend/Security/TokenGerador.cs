@@ -6,6 +6,7 @@ using backend.Models.Entities;
 using backend.Models.Dtos;
 using System.Security.Cryptography;
 using backend.Exceptions.UsuarioException;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace backend.Security
 {
@@ -25,21 +26,30 @@ namespace backend.Security
 				//Email: o email do usuário
 				new Claim(ClaimTypes.Email, email)
 			};
+			
 			var chave = new SymmetricSecurityKey(
 				Encoding.UTF8.GetBytes(configuracao.GetValue<string>("JWT:Token")!));
 			//Por ter escolhido o algoritmo de segurança HmacSha512, é necessário
 			//que a chave tenha tamanho de 64 bytes (512 bit)
 			var credenciais = new SigningCredentials(chave, algoritmo);
+			//Atribuido as configurações para criar o novo token de acesso
+			var tokenDescriptor = new SecurityTokenDescriptor
+			{
+				//Subject define as informações do usuário
+				Subject = new ClaimsIdentity(claims),
+				//Issuer define quem é o emissor desse token
+				Issuer = configuracao["JWT:Issuer"],
+				//Audience define quem deve receber esse token
+				Audience = configuracao["JWT:Audience"],
+				//Expires define o tempo de vida do token
+				Expires = DateTime.UtcNow.AddMinutes(10),
+				//As credenciais são usadas para criar o token
+				SigningCredentials = credenciais,
+				//IssuedAt define quando o token foi criado
+				IssuedAt = DateTime.UtcNow
+			};
 
-			var token = new JwtSecurityToken(
-				issuer: configuracao.GetValue<string>("JWT:Issuer"),
-				audience: configuracao.GetValue<string>("JWT:Audience"),
-				claims,
-				expires: DateTime.UtcNow.AddMinutes(10),
-				signingCredentials: credenciais
-			);
-
-			return new JwtSecurityTokenHandler().WriteToken(token);
+			return new JsonWebTokenHandler().CreateToken(tokenDescriptor) ;
 		}
 		//Método responsável para criar o token de recarga.
 		public TokenCriado CriarTokenRecarga(Guid idUsuario)
@@ -65,19 +75,21 @@ namespace backend.Security
 				Encoding.UTF8.GetBytes(configuracao.GetValue<string>("JWT:TokenRecarga")!));
 			var credenciais = new SigningCredentials(chave, algoritmoRecarga);
 
-			var token = new JwtSecurityToken(
-				issuer: configuracao.GetValue<string>("JWT:Issuer"),
-				audience: configuracao.GetValue<string>("JWT:Audience"),
-				claims,
-				expires: DateTime.UtcNow.AddDays(7),
-				signingCredentials: credenciais
-			);
+			var tokenDescriptor = new SecurityTokenDescriptor
+			{
+				Subject = new ClaimsIdentity(claims),
+				Issuer = configuracao["JWT:Issuer"],
+				Audience = configuracao["JWT:Audience"],
+				SigningCredentials= credenciais,
+				Expires = DateTime.UtcNow.AddDays(7),
+				IssuedAt = DateTime.UtcNow,
+			};
 			//Atribuindo o token de recarga para classe TokenCriado.
 			//O tempo de vida do token de recarga também é atribuído.
 			//Por padrão, coloco sete dias para o tempo de vida.
 			//Quando esse tempo passar, o usuário terá que entrar em sua conta
 			//novamente.
-			var tokenRecarga = new JwtSecurityTokenHandler().WriteToken(token);
+			var tokenRecarga = new JsonWebTokenHandler().CreateToken(tokenDescriptor);
 			var tempoToken = DateTime.UtcNow.AddDays(7);
 			return new TokenCriado(null, tokenRecarga, tempoToken);
 		}
