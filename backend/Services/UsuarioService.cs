@@ -89,8 +89,9 @@ namespace backend.Services
 
 		public async Task ExcluirConta()
 		{
-			Guid id = Guid.Parse(httpContext.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-			await usuarioRepositorio.DeletarUsuario(id);
+			var id = httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (id is null) throw new Exception("É necessário realizar login novamente");
+			await usuarioRepositorio.DeletarUsuario(Guid.Parse(id));
 			return;
 		}
 		public async Task<TokenResponse> RecarregarToken()
