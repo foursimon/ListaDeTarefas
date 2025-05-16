@@ -185,5 +185,39 @@ namespace backend.Controllers
 			}
 		}
 
+		[HttpDelete("logout")]
+		[Authorize]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult> SairDaConta()
+		{
+			try
+			{
+				await usuarioService.SairDaConta();
+				return NoContent();
+			}
+			catch (UsuarioNaoEncontradoException ex)
+			{
+				return NotFound(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
+					Title = "Conta não encontrada",
+					Detail = ex.Message,
+					Status = StatusCodes.Status404NotFound
+				});
+			}
+			catch (Exception ex)
+			{
+				return Problem(
+					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
+					title: "Algo inesperado aconteceu.",
+					detail: ex.Message,
+					statusCode: StatusCodes.Status500InternalServerError
+				);
+			}
+		}
+
 	}
 }
