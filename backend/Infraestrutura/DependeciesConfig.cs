@@ -2,6 +2,7 @@
 using backend.Repositorios;
 using backend.Repositorios.Interface;
 using backend.Security;
+using backend.Security.Interface;
 using backend.Services;
 using backend.Services.Interface;
 using Microsoft.EntityFrameworkCore;
