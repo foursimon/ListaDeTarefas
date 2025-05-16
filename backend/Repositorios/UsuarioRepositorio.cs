@@ -51,5 +51,15 @@ namespace backend.Repositorios
 			await context.SaveChangesAsync();
 			return usuario;
 		}
+
+		public async Task ExcluirTokenRecarga(Guid id)
+		{
+			Usuario usuario = await BuscarUsuarioPorId(id);
+			usuario.TokenRecarga = null;
+			usuario.TempoToken = null;
+			context.Usuarios.Update(usuario);
+			await context.SaveChangesAsync();
+			return;
+		}
 	}
 }

@@ -10,6 +10,8 @@ namespace backend.Repositorios.Interface
 
 		public Task<Usuario> AtualizarUsuario(Usuario usuario);
 
+		public Task ExcluirTokenRecarga(Guid id);
+
 		public Task DeletarUsuario(Guid id);
 	}
 }
