@@ -8,7 +8,6 @@ namespace backend.Infraestrutura.Mappers
 		public static UsuarioResponse ToUsuarioResponse(this Usuario usuario)
 		{
 			return new UsuarioResponse(
-				usuario.Id,
 				usuario.Nome,
 				usuario.Email,
 				usuario.QuantidadeTarefa
