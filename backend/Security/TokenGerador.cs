@@ -7,6 +7,7 @@ using backend.Models.Dtos;
 using System.Security.Cryptography;
 using backend.Exceptions.UsuarioException;
 using Microsoft.IdentityModel.JsonWebTokens;
+using backend.Security.Interface;
 
 namespace backend.Security
 {
