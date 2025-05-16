@@ -7,6 +7,8 @@ namespace backend.Services.Interface
 		public Task<TokenResponse> EntrarNaConta(UsuarioLogin conta);
 		public Task<UsuarioResponse> EditarConta(UsuarioUpdate conta);
 		public Task<UsuarioResponse> CriarConta(UsuarioCreate usuario);
+
+		public Task SairDaConta();
 		public Task<TokenResponse> RecarregarToken();
 
 		public void ColocarTokensNoCookie(TokenResponse tokens);

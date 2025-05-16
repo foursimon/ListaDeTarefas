@@ -86,7 +86,15 @@ namespace backend.Services
 			await usuarioRepositorio.AtualizarUsuario(usuario);
 			return new TokenResponse(tokenAcesso, tokenRecarga);
 		}
-
+		public async Task SairDaConta()
+		{
+			var id = httpContext.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (id is null) throw new Exception("Você não está conectado em sua conta");
+			await usuarioRepositorio.ExcluirTokenRecarga(Guid.Parse(id));
+			httpContext.HttpContext!.Response.Cookies.Delete("TOKEN_ACESSO");
+			httpContext.HttpContext!.Response.Cookies.Delete("TOKEN_RECARGA");
+			return;
+		}
 		public async Task ExcluirConta()
 		{
 			var id = httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
