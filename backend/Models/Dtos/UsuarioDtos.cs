@@ -3,7 +3,6 @@
 namespace backend.Models.Dtos
 {
 	public sealed record UsuarioResponse(
-		Guid Id,
 		string Nome,
 		string Email,
 		int QuantidadeTarefa
