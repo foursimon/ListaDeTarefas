@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using backend.Security.Interface;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
 namespace backend.Security
 {
