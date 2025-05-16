@@ -3,7 +3,7 @@ using backend.Infraestrutura.Mappers;
 using backend.Models.Dtos;
 using backend.Models.Entities;
 using backend.Repositorios.Interface;
-using backend.Security;
+using backend.Security.Interface;
 using backend.Services.Interface;
 using System.Security.Claims;
 
