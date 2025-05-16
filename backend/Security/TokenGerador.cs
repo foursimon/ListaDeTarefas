@@ -28,7 +28,7 @@ namespace backend.Security
 			};
 			
 			var chave = new SymmetricSecurityKey(
-				Encoding.UTF8.GetBytes(configuracao.GetValue<string>("JWT:Token")!));
+				Encoding.UTF8.GetBytes(configuracao["JWT:Token"]!));
 			//Por ter escolhido o algoritmo de segurança HmacSha512, é necessário
 			//que a chave tenha tamanho de 64 bytes (512 bit)
 			var credenciais = new SigningCredentials(chave, algoritmo);
@@ -72,7 +72,7 @@ namespace backend.Security
 				new Claim(ClaimTypes.Name, Guid.NewGuid().ToString()),
 			};
 			var chave = new SymmetricSecurityKey(
-				Encoding.UTF8.GetBytes(configuracao.GetValue<string>("JWT:TokenRecarga")!));
+				Encoding.UTF8.GetBytes(configuracao["JWT:TokenRecarga"]!));
 			var credenciais = new SigningCredentials(chave, algoritmoRecarga);
 
 			var tokenDescriptor = new SecurityTokenDescriptor
