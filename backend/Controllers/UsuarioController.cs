@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using backend.Services.Interface;
 using backend.Exceptions.UsuarioException;
 using backend.Models.Dtos;
+using MySqlX.XDevAPI;
 
 namespace backend.Controllers
 {
@@ -10,6 +11,38 @@ namespace backend.Controllers
 	[ApiController]
 	public class UsuarioController(IUsuarioService usuarioService) : ControllerBase
 	{
+		[HttpGet]
+		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<UsuarioResponse>> BuscarInformacoesDoUsuario()
+		{
+			try
+			{
+				var resposta = await usuarioService.BuscarInformacoesDoUsuario();
+				return Ok(resposta);
+			}
+			catch (UsuarioNaoEncontradoException ex)
+			{
+				return NotFound(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/404",
+					Title = "Conta não encontrada",
+					Detail = ex.Message,
+					Status = StatusCodes.Status404NotFound
+				});
+			}
+			catch (Exception ex)
+			{
+				return Problem(
+					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
+					title: "Algo inesperado aconteceu.",
+					detail: ex.Message,
+					statusCode: StatusCodes.Status500InternalServerError
+				);
+			}
+		}
 
 		[HttpPost("registrar")]
 		[ProducesResponseType<UsuarioResponse>(StatusCodes.Status201Created)]
@@ -22,17 +55,17 @@ namespace backend.Controllers
 				var resposta = await usuarioService.CriarConta(dados);
 				return Created("", resposta);
 			}
-			catch(EmailJaExisteException ex)
+			catch (EmailJaExisteException ex)
 			{
-				return BadRequest(new ProblemDetails
+				return NotFound(new ProblemDetails
 				{
 					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/400",
-					Title = "Conta já existe",
+					Title = "Email já está em uso",
 					Detail = ex.Message,
 					Status = StatusCodes.Status400BadRequest
 				});
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
@@ -52,8 +85,7 @@ namespace backend.Controllers
 		{
 			try
 			{
-				var resposta = await usuarioService.EntrarNaConta(dados);
-				usuarioService.ColocarTokensNoCookie(resposta);
+				await usuarioService.EntrarNaConta(dados);
 				return Ok();
 			}catch(LoginErradoException ex)
 			{
@@ -83,8 +115,7 @@ namespace backend.Controllers
 		{
 			try
 			{
-				var resposta = await usuarioService.RecarregarToken();
-				usuarioService.ColocarTokensNoCookie(resposta);
+				await usuarioService.RecarregarToken();
 				return Ok();
 			}
 			catch (UsuarioNaoEncontradoException ex)
@@ -131,7 +162,8 @@ namespace backend.Controllers
 			{
 				var resposta = await usuarioService.EditarConta(dados);
 				return Ok(resposta);
-			}catch(UsuarioNaoEncontradoException ex)
+			}
+			catch (UsuarioNaoEncontradoException ex)
 			{
 				return NotFound(new ProblemDetails
 				{
@@ -140,7 +172,18 @@ namespace backend.Controllers
 					Detail = ex.Message,
 					Status = StatusCodes.Status404NotFound
 				});
-			}catch(Exception ex)
+			}
+			catch (EmailJaExisteException ex)
+			{
+				return NotFound(new ProblemDetails
+				{
+					Type = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/400",
+					Title = "Email já está em uso",
+					Detail = ex.Message,
+					Status = StatusCodes.Status400BadRequest
+				});
+			}
+			catch (Exception ex)
 			{
 				return Problem(
 					type: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Reference/Status/500",
