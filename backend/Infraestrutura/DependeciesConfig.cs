@@ -2,6 +2,7 @@
 using backend.Repositorios;
 using backend.Repositorios.Interface;
 using backend.Security;
+using backend.Security.Interface;
 using backend.Services;
 using backend.Services.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,7 @@ namespace backend.Infraestrutura
 			builder.Services.AddScoped<ITarefasService, TarefasService>();
 			builder.Services.AddScoped<ICheckItemRepositorio, CheckItemRepositorio>();
 			builder.Services.AddScoped<ICheckItemService, CheckItemService>();
+			builder.Services.AddScoped<ICookies, Cookies>();
 		}
 		public static void AddApiDocumentation(this WebApplication app)
 		{

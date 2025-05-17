@@ -18,8 +18,12 @@ namespace backend.Infraestrutura
 						ValidateAudience = true,
 						ValidAudience = builder.Configuration["JWT:Audience"],
 						ValidateLifetime = true,
-						IssuerSigningKey = new SymmetricSecurityKey(
-							Encoding.UTF8.GetBytes(builder.Configuration["JWT:Token"]!)),
+						IssuerSigningKeys = [
+							new SymmetricSecurityKey(
+								Encoding.UTF8.GetBytes(builder.Configuration["JWT:Token"]!)),
+								new SymmetricSecurityKey(
+								Encoding.UTF8.GetBytes(builder.Configuration["JWT:TokenRecarga"]!))
+							],
 						ValidateIssuerSigningKey = true
 					};
 					//Aplicando configurações de Cookies para acessar o token de acesso.

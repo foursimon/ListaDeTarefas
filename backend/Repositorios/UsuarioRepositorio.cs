@@ -3,6 +3,7 @@ using backend.Exceptions.UsuarioException;
 using backend.Models.Entities;
 using backend.Repositorios.Interface;
 using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
 
 namespace backend.Repositorios
 {
@@ -11,14 +12,16 @@ namespace backend.Repositorios
 	{
 		public async Task<Usuario> ArmazenarNovoUsuario(Usuario dados)
 		{
-			//Verificando se o email informado já está vinculado a uma conta
-			if(await context.Usuarios.AnyAsync(p => p.Email == dados.Email))
-			{
-				throw new EmailJaExisteException(
-					"O Email informado já está vinculado a uma conta");
-			}
 			context.Usuarios.Add(dados);
-			await context.SaveChangesAsync();
+			try
+			{
+				await context.SaveChangesAsync();
+			//Usando um catch condicional, consigo verificar se o email já foi inserido
+			}catch(DbUpdateException ex)
+				when(ex.InnerException is MySqlException { Number: (int)MySqlErrorCode.DuplicateKeyEntry })
+			{
+				throw new EmailJaExisteException("O e-mail informado já está vinculado a uma conta");
+			}
 			return dados;
 		}
 
@@ -48,8 +51,26 @@ namespace backend.Repositorios
 		{
 			await BuscarUsuarioPorId(usuario.Id);
 			context.Usuarios.Update(usuario);
-			await context.SaveChangesAsync();
+			try
+			{
+				await context.SaveChangesAsync();
+			}
+			catch (DbUpdateException ex)
+				when (ex.InnerException is MySqlException { Number: (int)MySqlErrorCode.DuplicateKeyEntry })
+			{
+				throw new EmailJaExisteException("O e-mail informado já está vinculado a uma conta");
+			}
 			return usuario;
+		}
+
+		public async Task ExcluirTokenRecarga(Guid id)
+		{
+			Usuario usuario = await BuscarUsuarioPorId(id);
+			usuario.TokenRecarga = null;
+			usuario.TempoToken = null;
+			context.Usuarios.Update(usuario);
+			await context.SaveChangesAsync();
+			return;
 		}
 	}
 }

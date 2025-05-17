@@ -1,4 +1,4 @@
-﻿namespace backend.Security
+﻿namespace backend.Security.Interface
 {
 	public interface ISenhaHasher
 	{
