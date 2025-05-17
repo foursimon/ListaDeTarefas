@@ -31,6 +31,7 @@ namespace backend.Infraestrutura
 			builder.Services.AddScoped<ITarefasService, TarefasService>();
 			builder.Services.AddScoped<ICheckItemRepositorio, CheckItemRepositorio>();
 			builder.Services.AddScoped<ICheckItemService, CheckItemService>();
+			builder.Services.AddScoped<ICookies, Cookies>();
 		}
 		public static void AddApiDocumentation(this WebApplication app)
 		{
