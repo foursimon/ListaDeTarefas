@@ -11,41 +11,15 @@ namespace backend.Services
 {
 	public class UsuarioService(IUsuarioRepositorio usuarioRepositorio, 
 		ISenhaHasher criptografia, ITokenGerador geradorToken, 
-		IHttpContextAccessor httpContext) : IUsuarioService
+		IHttpContextAccessor httpContext, ICookies cookies) : IUsuarioService
 	{
-		//Método responsável por armazenar informações em Cookies
-		public void ColocarTokensNoCookie(TokenResponse tokens)
+		public async Task<UsuarioResponse> BuscarInformacoesDoUsuario()
 		{
-			//Aqui estou armazenando o token de acesso no cookie
-			httpContext.HttpContext!.Response.Cookies.Append("TOKEN_ACESSO", tokens.TokenAcesso,
-				new CookieOptions
-				{
-					//Expires indica o tempo que o cookie irá expirar,
-					Expires = DateTime.UtcNow.AddMinutes(10),
-					//HttpOnly indica se o valor no cookie não pode ser acessado
-					//por scripts no lado cliente (frontend)
-					HttpOnly = true,
-					//IsEssential indica que o valor que está sendo armazenado no cookie
-					//é essencial para o funcionamento correto do sistema
-					IsEssential = true,
-					//Secure indica se o cookie só pode ser transmitido em conexão
-					//HTTPS.
-					Secure = true,
-					//SameSite indica se o cookie pode ser usado entre sites
-					SameSite = SameSiteMode.Strict
-				});
-			httpContext.HttpContext!.Response.Cookies.Append("TOKEN_RECARGA", tokens.TokenRecarga,
-				new CookieOptions
-				{
-					Expires = DateTime.UtcNow.AddDays(7),
-					HttpOnly = true,
-					IsEssential = true,
-					Secure = true,
-					SameSite = SameSiteMode.Strict
-				});
-
+			var idUsuario = httpContext.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)
+				?? throw new UsuarioNaoEncontradoException($"Conta de usuário não foi encontrada");
+			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorId(Guid.Parse(idUsuario));
+			return usuario.ToUsuarioResponse();
 		}
-
 		public async Task<UsuarioResponse> CriarConta(UsuarioCreate usuario)
 		{
 			//Antes de criar a conta do usuário, caso as informações enviadas
@@ -70,7 +44,7 @@ namespace backend.Services
 			return resposta.ToUsuarioResponse();
 		}
 
-		public async Task<TokenResponse> EntrarNaConta(UsuarioLogin conta)
+		public async Task EntrarNaConta(UsuarioLogin conta)
 		{
 			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorEmail(conta.Email);
 			bool senhaCorreta = criptografia.VerificarSenha(conta.Senha, usuario.Senha);
@@ -84,15 +58,16 @@ namespace backend.Services
 			//Atualizo as informações salva no banco de dados
 			//com o token de recarga criado.
 			await usuarioRepositorio.AtualizarUsuario(usuario);
-			return new TokenResponse(tokenAcesso, tokenRecarga);
+			cookies.ColocarTokensNoCookie(new TokenResponse(tokenAcesso, tokenRecarga),
+				httpContext.HttpContext!);
+			return;
 		}
 		public async Task SairDaConta()
 		{
 			var id = httpContext.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (id is null) throw new Exception("Você não está conectado em sua conta");
 			await usuarioRepositorio.ExcluirTokenRecarga(Guid.Parse(id));
-			httpContext.HttpContext!.Response.Cookies.Delete("TOKEN_ACESSO");
-			httpContext.HttpContext!.Response.Cookies.Delete("TOKEN_RECARGA");
+			cookies.RemoverCookies(httpContext.HttpContext!);
 			return;
 		}
 		public async Task ExcluirConta()
@@ -100,9 +75,10 @@ namespace backend.Services
 			var id = httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (id is null) throw new Exception("É necessário realizar login novamente");
 			await usuarioRepositorio.DeletarUsuario(Guid.Parse(id));
+			cookies.RemoverCookies(httpContext.HttpContext!);
 			return;
 		}
-		public async Task<TokenResponse> RecarregarToken()
+		public async Task RecarregarToken()
 		{
 			var tokenRecargaCookie = httpContext.HttpContext?.Request.Cookies["TOKEN_RECARGA"]
 				?? throw new Exception("É necessário realizar login novamente");
@@ -114,7 +90,9 @@ namespace backend.Services
 			await usuarioRepositorio.AtualizarUsuario(usuario);
 			var tokenAcesso = tokenNovo.TokenAcesso!;
 			var tokenRecarga = tokenNovo.TokenRecarga;
-			return new TokenResponse(tokenAcesso, tokenRecarga);
+			cookies.ColocarTokensNoCookie(new TokenResponse(tokenAcesso, tokenRecarga),
+				httpContext.HttpContext);
+			return;
 		}
 
 		//Método responsável por pegar o token de recarga
