@@ -7,9 +7,9 @@ namespace backend.Security.Interface
 	{
 		public string CriarToken(string nome, Guid idUsuario, string email);
 		public TokenCriado CriarTokenRecarga(Guid idUsuario);
-		public TokenCriado RecarregarToken(Usuario usuario, string tokenRecebido);
+		public TokenCriado? RecarregarToken(Usuario usuario, string tokenRecebido);
 
-		public Guid PegarIdUsuarioToken(string token);
+		public string? PegarIdUsuarioToken(string token);
 
 	}
 }
