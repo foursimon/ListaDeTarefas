@@ -4,14 +4,14 @@ namespace backend.Repositorios.Interface
 {
 	public interface IUsuarioRepositorio
 	{
-		public Task<Usuario> BuscarUsuarioPorId(Guid id);
-		public Task<Usuario> BuscarUsuarioPorEmail(string email);
-		public Task<Usuario> ArmazenarNovoUsuario(Usuario dados);
+		public Task<Usuario?> BuscarUsuarioPorId(Guid id);
+		public Task<Usuario?> BuscarUsuarioPorEmail(string email);
+		public Task<Usuario?> ArmazenarNovoUsuario(Usuario dados);
 
-		public Task<Usuario> AtualizarUsuario(Usuario usuario);
+		public Task<Usuario?> AtualizarUsuario(Usuario usuario);
 
-		public Task ExcluirTokenRecarga(Guid id);
+		public Task ExcluirTokenRecarga(Usuario usuario);
 
-		public Task DeletarUsuario(Guid id);
+		public Task DeletarUsuario(Usuario usuario);
 	}
 }
