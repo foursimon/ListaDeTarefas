@@ -5,7 +5,6 @@ using System.Text;
 using backend.Models.Entities;
 using backend.Models.Dtos;
 using System.Security.Cryptography;
-using backend.Exceptions.UsuarioException;
 using Microsoft.IdentityModel.JsonWebTokens;
 using backend.Security.Interface;
 
@@ -95,24 +94,21 @@ namespace backend.Security
 			return new TokenCriado(null, tokenRecarga, tempoToken);
 		}
 
-		public Guid PegarIdUsuarioToken(string tokenRecebido)
+		public string? PegarIdUsuarioToken(string tokenRecebido)
 		{
 			var handler = new JwtSecurityTokenHandler();
-			if (!handler.CanReadToken(tokenRecebido))
-				throw new Exception("Não é possível ler o token enviado");
+			if (!handler.CanReadToken(tokenRecebido)) return null;
 			var token = handler.ReadJwtToken(tokenRecebido);
 			var idUsuario = token.Claims.FirstOrDefault(p => p.Type == ClaimTypes.NameIdentifier)?.Value;
-			if (idUsuario is null) throw new Exception("Usuário não foi encontrado no token");
-			return Guid.Parse(idUsuario);
-
+			return idUsuario;
 		}
 
-		public TokenCriado RecarregarToken(Usuario usuario, string tokenRecebido)
+		public TokenCriado? RecarregarToken(Usuario usuario, string tokenRecebido)
 		{
 			if(tokenRecebido != usuario.TokenRecarga || tokenRecebido is null
 				|| usuario.TempoToken <= DateTime.UtcNow)
 			{
-				throw new TokenInvalidoException("O token de recarga enviado é inválido.");
+				return null;
 			}
 
 			var tokenAcesso = CriarToken(usuario.Nome, usuario.Id, usuario.Email);
