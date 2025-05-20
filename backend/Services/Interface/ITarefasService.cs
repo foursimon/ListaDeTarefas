@@ -1,17 +1,18 @@
 ﻿using backend.Models.Dtos;
+using backend.Resultados;
 
 namespace backend.Services.Interface
 {
 	public interface ITarefasService
 	{
-		public Task<List<TarefasResponse>> BuscarTarefasPorUsuario();
+		public Task<Result<List<TarefasResponse>, Error>> BuscarTarefasPorUsuario();
 
-		public Task<TarefasResponse> CriarNovaTarefa(TarefasCreate dados);
+		public Task<Result<TarefasResponse, Error>> CriarNovaTarefa(TarefasCreate dados);
 
-		public Task<TarefasResponse> EditarTarefa(Guid idTarefa, TarefasUpdate dados);
+		public Task<Result<TarefasResponse, Error>> EditarTarefa(Guid idTarefa, TarefasUpdate dados);
 
-		public Task<TarefasResponse> AtualizarStatusTarefa(Guid idTarefa, bool status);
+		public Task<Result<TarefasResponse, Error>> AtualizarStatusTarefa(Guid idTarefa, bool status);
 
-		public Task ExcluirTarefa(Guid idTarefa);
+		public Task<Result<Unit, Error>> ExcluirTarefa(Guid idTarefa);
 	}
 }
