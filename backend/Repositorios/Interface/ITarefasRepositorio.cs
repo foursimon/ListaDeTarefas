@@ -6,12 +6,13 @@ namespace backend.Repositorios.Interface
 	public interface ITarefasRepositorio
 	{
 		public Task<List<Tarefas>> BuscarTarefasPorUsuario(Guid idUsuario);
-		public Task<Tarefas> CriarTarefa(Tarefas novaTarefa);
+		public Task<Tarefas?> BuscarTarefaPorId(Guid idTarefa);
+		public Task<Tarefas?> CriarTarefa(Tarefas novaTarefa, Usuario usuario);
 
-		public Task<Tarefas> AtualizarTarefa(Guid idTarefa, TarefasUpdate tarefa);
+		public Task<Tarefas?> AtualizarTarefa(Tarefas tarefa, TarefasUpdate dados);
 
-		public Task<Tarefas> AtualizarStatusTarefa(Guid idTarefa, bool status);
-		public Task ExcluirTarefa(Guid idTarefa, Guid idUsuario);
+		public Task<Tarefas> AtualizarStatusTarefa(Tarefas tarefa, bool status);
+		public Task ExcluirTarefa(Tarefas tarefa, Usuario usuario);
 
 
 	}
