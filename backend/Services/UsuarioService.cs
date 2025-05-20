@@ -1,8 +1,8 @@
-﻿using backend.Exceptions.UsuarioException;
-using backend.Infraestrutura.Mappers;
+﻿using backend.Infraestrutura.Mappers;
 using backend.Models.Dtos;
 using backend.Models.Entities;
 using backend.Repositorios.Interface;
+using backend.Resultados;
 using backend.Security.Interface;
 using backend.Services.Interface;
 using System.Security.Claims;
@@ -13,42 +13,48 @@ namespace backend.Services
 		ISenhaHasher criptografia, ITokenGerador geradorToken, 
 		IHttpContextAccessor httpContext, ICookies cookies) : IUsuarioService
 	{
-		public async Task<UsuarioResponse> BuscarInformacoesDoUsuario()
+		public async Task<Result<UsuarioResponse, Error>> BuscarInformacoesDoUsuario()
 		{
-			var idUsuario = httpContext.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)
-				?? throw new UsuarioNaoEncontradoException($"Conta de usuário não foi encontrada");
-			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorId(Guid.Parse(idUsuario));
+			var idUsuario = httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (idUsuario is null) return UsuarioFailure.TokenInvalido;
+			Usuario? usuario = await usuarioRepositorio.BuscarUsuarioPorId(Guid.Parse(idUsuario!));
+			if (usuario is null) return UsuarioFailure.UsuarioNaoEncontrado;
 			return usuario.ToUsuarioResponse();
 		}
-		public async Task<UsuarioResponse> CriarConta(UsuarioCreate usuario)
+		public async Task<Result<UsuarioResponse, Error>> CriarConta(UsuarioCreate usuario)
 		{
 			//Antes de criar a conta do usuário, caso as informações enviadas
 			//estejam válidas, eu criptografo a senha do usuário para
 			//armazenar no banco de dados de forma segura.
 			Usuario novaConta = usuario.ToUsuario();
 			novaConta.Senha = criptografia.CriptografarSenha(novaConta.Senha);
-			await usuarioRepositorio.ArmazenarNovoUsuario(novaConta);
-			return novaConta.ToUsuarioResponse();
+			Usuario? resposta = await usuarioRepositorio.ArmazenarNovoUsuario(novaConta);
+			if (resposta is null) return UsuarioFailure.EmailJaExiste;
+			return resposta.ToUsuarioResponse();
 		}
 
-		public async Task<UsuarioResponse> EditarConta(UsuarioUpdate conta)
+		public async Task<Result<UsuarioResponse, Error>> EditarConta(UsuarioUpdate conta)
 		{
-			Guid id = Guid.Parse(httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-			Usuario usuarioEncontrado = await usuarioRepositorio.BuscarUsuarioPorId(id);
+			var id = httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (id is null) return UsuarioFailure.UsuarioNaoEncontrado;
+			Usuario? usuarioEncontrado = await usuarioRepositorio.BuscarUsuarioPorId(Guid.Parse(id!));
+			if (usuarioEncontrado is null) return UsuarioFailure.UsuarioNaoEncontrado;
 			Usuario usuario = conta.ToUsuario(usuarioEncontrado);
 			if(conta.Senha is not null)
 			{
 				usuario.Senha = criptografia.CriptografarSenha(conta.Senha);
 			}
-			Usuario resposta = await usuarioRepositorio.AtualizarUsuario(usuario);
+			Usuario? resposta = await usuarioRepositorio.AtualizarUsuario(usuario);
+			if (resposta is null) return UsuarioFailure.EmailJaExiste;
 			return resposta.ToUsuarioResponse();
 		}
 
-		public async Task EntrarNaConta(UsuarioLogin conta)
+		public async Task<Result<Unit, Error>> EntrarNaConta(UsuarioLogin conta)
 		{
-			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorEmail(conta.Email);
+			Usuario? usuario = await usuarioRepositorio.BuscarUsuarioPorEmail(conta.Email);
+			if (usuario is null) return UsuarioFailure.LoginErrado;
 			bool senhaCorreta = criptografia.VerificarSenha(conta.Senha, usuario.Senha);
-			if (!senhaCorreta) throw new LoginErradoException("Email ou senha incorretos");
+			if (!senhaCorreta) return UsuarioFailure.LoginErrado;
 			//Um novo token de recarga é atribuído para o usuário quando
 			//ele entra na sua conta manualmente.
 			AtribuirTokenRecarga(usuario);
@@ -60,39 +66,52 @@ namespace backend.Services
 			await usuarioRepositorio.AtualizarUsuario(usuario);
 			cookies.ColocarTokensNoCookie(new TokenResponse(tokenAcesso, tokenRecarga),
 				httpContext.HttpContext!);
-			return;
+			return Unit.Value;
 		}
-		public async Task SairDaConta()
-		{
-			var id = httpContext.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (id is null) throw new Exception("Você não está conectado em sua conta");
-			await usuarioRepositorio.ExcluirTokenRecarga(Guid.Parse(id));
-			cookies.RemoverCookies(httpContext.HttpContext!);
-			return;
-		}
-		public async Task ExcluirConta()
+		public async Task<Result<Unit, Error>> SairDaConta()
 		{
 			var id = httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (id is null) throw new Exception("É necessário realizar login novamente");
-			await usuarioRepositorio.DeletarUsuario(Guid.Parse(id));
+			if (id is null) return UsuarioFailure.TokenInvalido;
+
+			Usuario? usuario = await usuarioRepositorio.BuscarUsuarioPorId(Guid.Parse(id));
+			if (usuario is null) return UsuarioFailure.UsuarioNaoEncontrado;
+
+			await usuarioRepositorio.ExcluirTokenRecarga(usuario);
 			cookies.RemoverCookies(httpContext.HttpContext!);
-			return;
+			return Unit.Value;
 		}
-		public async Task RecarregarToken()
+		public async Task<Result<Unit, Error>> ExcluirConta()
 		{
-			var tokenRecargaCookie = httpContext.HttpContext?.Request.Cookies["TOKEN_RECARGA"]
-				?? throw new Exception("É necessário realizar login novamente");
-			Guid idUsuario = geradorToken.PegarIdUsuarioToken(tokenRecargaCookie);
-			Usuario usuario = await usuarioRepositorio.BuscarUsuarioPorId(idUsuario);
-			TokenCriado tokenNovo = geradorToken.RecarregarToken(usuario, tokenRecargaCookie!);
+			var id = httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (id is null) return UsuarioFailure.TokenInvalido;
+
+			Usuario? usuario = await usuarioRepositorio.BuscarUsuarioPorId(Guid.Parse(id));
+			if (usuario is null) return UsuarioFailure.UsuarioNaoEncontrado;
+			
+			await usuarioRepositorio.DeletarUsuario(usuario);
+			cookies.RemoverCookies(httpContext.HttpContext!);
+			return Unit.Value;
+		}
+		public async Task<Result<Unit, Error>> RecarregarToken()
+		{
+			var tokenRecargaCookie = httpContext.HttpContext?.Request.Cookies["TOKEN_RECARGA"];
+			if (tokenRecargaCookie is null) return UsuarioFailure.TokenInvalido;
+
+			var idUsuario = geradorToken.PegarIdUsuarioToken(tokenRecargaCookie);
+			if (idUsuario is null) return UsuarioFailure.TokenInvalido;
+			Usuario? usuario = await usuarioRepositorio.BuscarUsuarioPorId(Guid.Parse(idUsuario));
+			if (usuario is null) return UsuarioFailure.UsuarioNaoEncontrado;
+			
+			TokenCriado? tokenNovo = geradorToken.RecarregarToken(usuario, tokenRecargaCookie!);
+			if (tokenNovo is null) return UsuarioFailure.TokenInvalido;
 			usuario.TokenRecarga = tokenNovo.TokenRecarga;
 			usuario.TempoToken = tokenNovo.TempoToken;
+
 			await usuarioRepositorio.AtualizarUsuario(usuario);
-			var tokenAcesso = tokenNovo.TokenAcesso!;
-			var tokenRecarga = tokenNovo.TokenRecarga;
-			cookies.ColocarTokensNoCookie(new TokenResponse(tokenAcesso, tokenRecarga),
-				httpContext.HttpContext);
-			return;
+			cookies.ColocarTokensNoCookie(new TokenResponse
+				(tokenNovo.TokenAcesso!, tokenNovo.TokenRecarga),
+				httpContext.HttpContext!);
+			return Unit.Value;
 		}
 
 		//Método responsável por pegar o token de recarga
