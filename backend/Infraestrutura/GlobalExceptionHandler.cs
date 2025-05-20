@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Infraestrutura
 {
+	//Esta classe serve para capturar todas exceções inesperadas que podem ocorrer
+	//ao utilizar este sistema.
+	//Dessa forma, para erros esperados, uso o padrão Result, mas para erros
+	//inesperados, ou seja, exceções, uso esta classe para pegar esses erros.
 	public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> _logger) : IExceptionHandler
 	{
 		public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, 
