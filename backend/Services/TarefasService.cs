@@ -2,55 +2,67 @@
 using backend.Models.Dtos;
 using backend.Models.Entities;
 using backend.Repositorios.Interface;
+using backend.Resultados;
 using backend.Services.Interface;
 using MySqlX.XDevAPI;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace backend.Services
 {
 	public class TarefasService(ITarefasRepositorio tarefasRepositorio,
-		IHttpContextAccessor httpContext) : ITarefasService
+		IUsuarioRepositorio usuarioRepositorio, IHttpContextAccessor httpContext) 
+		: ITarefasService
 	{
-		private Guid PegarIdUsuario()
+		private async Task<Usuario?> BuscarUsuario()
 		{
-			return Guid.Parse(httpContext.HttpContext?.User.FindFirstValue(
-				ClaimTypes.NameIdentifier)!);
+			var idUsuario = httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (idUsuario is null) return null;
+			return await usuarioRepositorio.BuscarUsuarioPorId(Guid.Parse(idUsuario!));
 		}
-		public async Task<List<TarefasResponse>> BuscarTarefasPorUsuario()
+		public async Task<Result<List<TarefasResponse>, Error>> BuscarTarefasPorUsuario()
 		{
-			Guid idUsuario = PegarIdUsuario();
+			Usuario? usuario = await BuscarUsuario();
+			if (usuario is null) return UsuarioFailure.TokenInvalido;
 			List<Tarefas> tarefas = await tarefasRepositorio
-				.BuscarTarefasPorUsuario(idUsuario);
-			List<TarefasResponse> resposta = new List<TarefasResponse>();
-			foreach(Tarefas tarefa in tarefas)
-			{
-				resposta.Add(tarefa.ToTarefasResponse());
-			}
-			return resposta;
+				.BuscarTarefasPorUsuario(usuario.Id);
+			List<TarefasResponse> tarefasDto = tarefas.Select(tarefa => tarefa.ToTarefasResponse()).ToList();
+			return tarefasDto;
 		}
-		public async Task<TarefasResponse> CriarNovaTarefa(TarefasCreate dados)
+		public async Task<Result<TarefasResponse, Error>> CriarNovaTarefa(TarefasCreate dados)
 		{
-			Guid idUsuario = PegarIdUsuario();
-			Tarefas novaTarefa = dados.ToTarefas(idUsuario);
-			Tarefas resposta = await tarefasRepositorio.CriarTarefa(novaTarefa);
+			Usuario? usuario = await BuscarUsuario();
+			if (usuario is null) return UsuarioFailure.TokenInvalido;
+			Tarefas novaTarefa = dados.ToTarefas(usuario.Id);
+			var resposta = await tarefasRepositorio.CriarTarefa(novaTarefa, usuario);
+			if (resposta is null) return TarefasFailure.QuantidadeExcedida;
 			return resposta.ToTarefasResponse();
 		}
-		public async Task<TarefasResponse> EditarTarefa(Guid idTarefa, TarefasUpdate dados)
+		public async Task<Result<TarefasResponse, Error>> EditarTarefa(Guid idTarefa, TarefasUpdate dados)
 		{
-			Tarefas tarefaAtualizada = await tarefasRepositorio.AtualizarTarefa(idTarefa, dados);
+			Tarefas? tarefa = await tarefasRepositorio.BuscarTarefaPorId(idTarefa);
+			if (tarefa is null) return TarefasFailure.TarefaNaoEncontrada;
+			Tarefas? tarefaAtualizada = await tarefasRepositorio.AtualizarTarefa(tarefa, dados);
+			if (tarefaAtualizada is null) return TarefasFailure.TarefaNaoEncontrada;
 			return tarefaAtualizada.ToTarefasResponse();
 		}
 
-		public async Task<TarefasResponse> AtualizarStatusTarefa(Guid idTarefa, bool status)
+		public async Task<Result<TarefasResponse, Error>> AtualizarStatusTarefa(Guid idTarefa, bool status)
 		{
-			Tarefas tarefaAtualizada = await tarefasRepositorio.AtualizarStatusTarefa(idTarefa, status);
+			Tarefas? tarefa = await tarefasRepositorio.BuscarTarefaPorId(idTarefa);
+			if (tarefa is null) return TarefasFailure.TarefaNaoEncontrada;
+			Tarefas tarefaAtualizada = await tarefasRepositorio.AtualizarStatusTarefa(tarefa, status);
 			return tarefaAtualizada.ToTarefasResponse();
 		}
 
-		public async Task ExcluirTarefa(Guid idTarefa)
+		public async Task<Result<Unit, Error>> ExcluirTarefa(Guid idTarefa)
 		{
-			await tarefasRepositorio.ExcluirTarefa(idTarefa, PegarIdUsuario());
-			return;
+			Usuario? usuario = await BuscarUsuario();
+			if (usuario is null) return UsuarioFailure.TokenInvalido;
+			Tarefas? tarefa = await tarefasRepositorio.BuscarTarefaPorId(idTarefa);
+			if (tarefa is null) return TarefasFailure.TarefaNaoEncontrada;
+			await tarefasRepositorio.ExcluirTarefa(tarefa, usuario);
+			return Unit.Value;
 		}
 	}
 }

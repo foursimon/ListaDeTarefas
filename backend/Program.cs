@@ -13,6 +13,8 @@ namespace backend
             builder.Services.AddOpenApi();
             builder.AddDependecies();
             builder.AddJwtAuthentication();
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
             var app = builder.Build();
      
 
@@ -23,7 +25,7 @@ namespace backend
             app.AddApiDocumentation();
 
             app.MapControllers();
-
+            app.UseExceptionHandler();
             app.Run();
         }
     }
