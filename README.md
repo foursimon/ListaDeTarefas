@@ -1,9 +1,9 @@
 <h1><img src="./capa/tarefa.png" width="50px"/> Projeto Lista de Tarefas </h1>
-<p>Este projeto consiste em um sistema que permite a criação de lista de tarefas desenvolvido com o framework .Net com alinguagem CSharp e um banco de dados MySQL.</p>
+<p>Este projeto consiste em um sistema que permite a criação de lista de tarefas desenvolvido com o framework .Net com a linguagem CSharp e um banco de dados MySQL.</p>
 <p>Atualmente, apenas o backend do sistema foi implementado, e futuramente irei adicionar o frontend.</p>
 
 <h2><img src="./capa/goal.png" width="30px"> Objetivo</h2>
-<p>O foco deste projeto não se resume apenas na criação de um sistema de tarefas, mas também para entender mais sobre padrões de senvolvimento de sistemas com o uso do Result Pattern e como tratar erros e exceções de forma eficiente e compreensível.</p>
+<p>O foco deste projeto não se resume apenas na criação de um sistema de tarefas, mas também para entender mais sobre padrões de desenvolvimento de sistemas com o uso do Result Pattern e como tratar erros e exceções de forma eficiente e compreensível.</p>
 
 <h2><img src="./capa/question.png" width="30px"/> Como funciona?</h2>
 <h3><img src="./capa/server.png" width="25px"/> Backend</h3>
