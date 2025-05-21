@@ -33,6 +33,6 @@ namespace backend.Resultados
 		public static Error Unauthorized(string titulo, string descricao) =>
 			new Error(titulo, descricao, 401);
 		public static Error Conflict(string titulo, string descricao) =>
-			new Error(titulo, descricao, 400);
+			new Error(titulo, descricao, 409);
 	}
 }
