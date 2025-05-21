@@ -1,5 +1,5 @@
 <h1><img src="./capa/tarefa.png" width="50px"/> Projeto Lista de Tarefas </h1>
-<p>Este projeto consiste em um ssitema que permite a criação de lista de tarefas desenvolvido com o framework .Net com alinguagem CSharp e um banco de dados MySQL.</p>
+<p>Este projeto consiste em um sistema que permite a criação de lista de tarefas desenvolvido com o framework .Net com alinguagem CSharp e um banco de dados MySQL.</p>
 <p>Atualmente, apenas o backend do sistema foi implementado, e futuramente irei adicionar o frontend.</p>
 
 <h2><img src="./capa/goal.png" width="30px"> Objetivo</h2>
